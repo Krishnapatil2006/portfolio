@@ -110,10 +110,4 @@
 
 
 
-
-
-
-
-
-
-i have completed my 10th from palghar school name was st kadam vidylaya adn 12th from the sdsm dandekar collage i taken science as stream with pcmb an it as the option subject and i liked maths and phisics and it and was part of coders club vice president of coders club and the event cordinetor of most of the events and the event pinnacle head of the gaming department pinnacle is an national level itevent hosted by gh raisoni jalgoan , hobbies i like the baddminton alot i am a state player in badminton and also like gaming i mostly play pc games like resident evil tomb rider rdr and in mobil games i like freee fire the most i spent 6 ot 7 years playing this ggames i have most memorys in this game and in entertenment i like the Harry potter all movies , game of thrones lord of rings and  in anime one piece ,naruto ,bleech ,etc music i like old classic musics old 90 s and earlly 2000 musics and new lofies and rock musics from yoyo , and i read the all boks of harry pooter ,and the famus books like Code & Craftsmanship,Engineering & Collaboration, i do mostly go to the court to play badminton and do work on my new ideeas , ya i am normaly speek formaly to others but not in frainds circle 
+
