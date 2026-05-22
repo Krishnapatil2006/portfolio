@@ -45,45 +45,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Use the smarter llama-3.3-70b-versatile model which handles tool-calling flawlessly
+# avoiding the parser issues and output generation failures of the 8B model.
 llm = ChatGroq(
-    model="llama-3.1-8b-instant",  
+    model="llama-3.3-70b-versatile",  
     temperature=0.3,
     max_tokens=1024,
 )
 
-# --- Tools Setup ---
-def create_rag_tool():
-    try:
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        vector_store = Chroma(
-            persist_directory="./twin_chroma_db",
-            collection_name="krishna_knowledge",
-            embedding_function=embeddings
-        )
-        retriever = vector_store.as_retriever(search_kwargs={"k": 5})
-        
-        @tool
-        def resume_knowledge_base(query: str) -> str:
-            """Use this tool to answer questions about Krishna Patil's personal background, education, skills, projects, and experiences."""
+# --- Global Vector Store / RAG Setup ---
+retriever = None
+try:
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    vector_store = Chroma(
+        persist_directory="./twin_chroma_db",
+        collection_name="krishna_knowledge",
+        embedding_function=embeddings
+    )
+    retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+except Exception as e:
+    print(f"Failed to initialize Chroma DB with Google Embeddings: {e}")
+
+# --- Tools Setup (Defined in global scope to ensure proper serialization) ---
+
+@tool
+def resume_knowledge_base(query: str) -> str:
+    """Use this tool to answer questions about Krishna Patil's personal background, education, skills, projects, and experiences."""
+    global retriever
+    if retriever is not None:
+        try:
             docs = retriever.invoke(query)
             context = "\n".join([d.page_content for d in docs])
             prompt = f"Answer the following question based only on the provided context:\n\n<context>\n{context}\n</context>\n\nQuestion: {query}"
             response = llm.invoke(prompt)
             return response.content
-        return resume_knowledge_base
+        except Exception as e:
+            print(f"Error querying retriever: {e}")
+            
+    # Fallback to local markdown file if Chroma failed or is empty
+    try:
+        with open("knowledge_base.md", "r", encoding="utf-8") as f:
+            return f.read()
     except Exception as e:
-        print(f"Failed to initialize Chroma DB with Google Embeddings: {e}")
-        @tool
-        def resume_knowledge_base(query: str) -> str:
-            """Use this tool to answer questions about Krishna Patil's personal background, education, skills, projects, and experiences."""
-            try:
-                with open("knowledge_base.md", "r", encoding="utf-8") as f:
-                    return f.read()
-            except:
-                return "I am Krishna Patil, a passionate BCA student."
-        return resume_knowledge_base
-
-resume_tool = create_rag_tool()
+        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science."
 
 @tool
 def calculator(expression: str) -> str:
@@ -116,8 +120,8 @@ def get_weather(city: str) -> str:
         return f"Error fetching weather: {e}"
 
 @tool
-def get_current_datetime() -> str:
-    """Get the current date and time."""
+def get_current_datetime(query: str = "") -> str:
+    """Get the current date and time. The query argument is optional and ignored."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 @tool
@@ -181,7 +185,7 @@ def web_search(query: str) -> str:
         return search_tool_func.run(query)
     return "Web search is currently unavailable."
 
-tools = [resume_tool, web_search, calculator, get_weather, get_current_datetime, schedule_meeting, check_schedule]
+tools = [resume_knowledge_base, web_search, calculator, get_weather, get_current_datetime, schedule_meeting, check_schedule]
 
 # --- Agent Setup ---
 qa_system_prompt = """You are the AI Twin of Krishna Chandrakant Patil. You act, speak, and respond exactly like him. 
