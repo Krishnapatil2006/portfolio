@@ -9,7 +9,8 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain.chains import RetrievalQA
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.tools import tool
 from langchain_community.utilities import SerpAPIWrapper
@@ -56,13 +57,15 @@ def create_rag_tool():
             embedding_function=embeddings
         )
         retriever = vector_store.as_retriever(search_kwargs={"k": 5})
-        rag_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
+        prompt_rag = ChatPromptTemplate.from_template("Answer based on context:\n\n{context}\n\nQuestion: {input}")
+        document_chain = create_stuff_documents_chain(llm, prompt_rag)
+        rag_chain = create_retrieval_chain(retriever, document_chain)
         
         @tool
         def resume_knowledge_base(query: str) -> str:
             """Use this tool to answer questions about Krishna Patil's personal background, education, skills, projects, and experiences."""
-            response = rag_chain.invoke({"query": query})
-            return response["result"]
+            response = rag_chain.invoke({"input": query})
+            return response["answer"]
         return resume_knowledge_base
     except Exception as e:
         print(f"Failed to initialize Chroma DB with Google Embeddings: {e}")
