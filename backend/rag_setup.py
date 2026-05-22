@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 
 # Load env variables
@@ -25,9 +25,10 @@ def build_rag():
     splits = text_splitter.split_documents(docs)
     print(f"Created {len(splits)} chunks.")
 
-    print("Generating FastEmbed embeddings and storing in Chroma DB...")
-    # Initialize offline embeddings (no API key required)
-    embeddings = FastEmbedEmbeddings()
+    print("Generating Google embeddings and storing in Chroma DB...")
+    if os.getenv("Gemini_Api_Key"):
+        os.environ["GOOGLE_API_KEY"] = os.getenv("Gemini_Api_Key")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
     # Create and persist the vector store
     vector_store = Chroma.from_documents(

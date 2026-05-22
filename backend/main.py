@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_chroma import Chroma
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.tools import tool
-from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.utilities import SerpAPIWrapper
 
 # History management
 from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -21,6 +21,14 @@ from langchain_core.chat_history import BaseChatMessageHistory
 
 load_dotenv(dotenv_path="../.env")
 load_dotenv()
+
+# Map the .env keys to what LangChain expects if they differ
+if os.getenv("Gemini_Api_Key"):
+    os.environ["GOOGLE_API_KEY"] = os.getenv("Gemini_Api_Key")
+if os.getenv("Groq_Api_Key"):
+    os.environ["GROQ_API_KEY"] = os.getenv("Groq_Api_Key")
+if os.getenv("Serp_Api_Key"):
+    os.environ["SERPAPI_API_KEY"] = os.getenv("Serp_Api_Key")
 
 app = FastAPI()
 
@@ -41,7 +49,7 @@ llm = ChatGroq(
 # --- Tools Setup ---
 def create_rag_tool():
     try:
-        embeddings = FastEmbedEmbeddings()
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         vector_store = Chroma(
             persist_directory="./twin_chroma_db",
             collection_name="krishna_knowledge",
@@ -57,7 +65,7 @@ def create_rag_tool():
             return response["result"]
         return resume_knowledge_base
     except Exception as e:
-        print(f"Failed to initialize Chroma DB: {e}")
+        print(f"Failed to initialize Chroma DB with Google Embeddings: {e}")
         @tool
         def resume_knowledge_base(query: str) -> str:
             """Use this tool to answer questions about Krishna Patil's personal background, education, skills, projects, and experiences."""
@@ -100,9 +108,14 @@ def get_weather(city: str) -> str:
     except Exception as e:
         return f"Error fetching weather: {e}"
 
-search_tool = DuckDuckGoSearchRun()
+# Set up SERP API search tool
+search_tool_func = SerpAPIWrapper()
+@tool
+def web_search(query: str) -> str:
+    """A search engine. Useful for when you need to answer questions about current events. Input should be a search query."""
+    return search_tool_func.run(query)
 
-tools = [resume_tool, search_tool, calculator, get_weather]
+tools = [resume_tool, web_search, calculator, get_weather]
 
 # --- Agent Setup ---
 qa_system_prompt = """You are the AI Twin of Krishna Chandrakant Patil. You act, speak, and respond exactly like him. 
