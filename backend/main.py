@@ -29,11 +29,14 @@ from langchain_core.chat_history import BaseChatMessageHistory
 load_dotenv(dotenv_path="../.env")
 load_dotenv()
 
-# Map the .env keys to what LangChain expects if they differ
-# AND provide fallback dummy keys so the app doesn't crash at startup if missing!
-os.environ["GOOGLE_API_KEY"] = os.getenv("Gemini_Api_Key", os.getenv("GOOGLE_API_KEY", "dummy_google_key"))
-os.environ["GROQ_API_KEY"] = os.getenv("Groq_Api_Key", os.getenv("GROQ_API_KEY", "dummy_groq_key"))
-os.environ["SERPAPI_API_KEY"] = os.getenv("Serp_Api_Key", os.getenv("SERPAPI_API_KEY", "dummy_serp_key"))
+# Map the .env keys to what LangChain expects, handling different cases and stripping leading/trailing spaces
+gemini_key = os.getenv("Gemini_Api_Key") or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+groq_key = os.getenv("Groq_Api_Key") or os.getenv("GROQ_API_KEY")
+serp_key = os.getenv("Serp_Api_Key") or os.getenv("SERP_API_KEY") or os.getenv("SERPAPI_API_KEY")
+
+os.environ["GOOGLE_API_KEY"] = gemini_key.strip() if gemini_key else "dummy_google_key"
+os.environ["GROQ_API_KEY"] = groq_key.strip() if groq_key else "dummy_groq_key"
+os.environ["SERPAPI_API_KEY"] = serp_key.strip() if serp_key else "dummy_serp_key"
 
 app = FastAPI()
 
@@ -89,12 +92,41 @@ def resume_knowledge_base(query: str) -> str:
         except Exception as e:
             print(f"Error querying retriever: {e}")
             
-    # Fallback to local markdown file if Chroma failed or is empty
+    # Fallback to smart local keyword-matching if Chroma failed or is empty (saves massive tokens)
     try:
         with open("knowledge_base.md", "r", encoding="utf-8") as f:
-            return f.read()
+            content = f.read()
+        
+        # Split content by markdown section headers
+        sections = content.split("\n## ")
+        matching_sections = []
+        
+        query_lower = query.lower()
+        for i, sec in enumerate(sections):
+            sec_title = sec.split("\n")[0].lower()
+            
+            # Match keywords to return specific relevant sections
+            if any(k in query_lower for k in ["project", "work", "experience", "mediai", "kirito", "job", "fake review", "basha"]):
+                if "project" in sec_title or "work" in sec_title:
+                    matching_sections.append("## " + sec if i > 0 else sec)
+            elif any(k in query_lower for k in ["hobby", "interest", "sport", "game", "music", "badminton", "anime", "harry potter"]):
+                if "interest" in sec_title:
+                    matching_sections.append("## " + sec if i > 0 else sec)
+            elif any(k in query_lower for k in ["skills", "expert", "tech", "languages", "programming"]):
+                if "skills" in sec_title:
+                    matching_sections.append("## " + sec if i > 0 else sec)
+            elif any(k in query_lower for k in ["contact", "email", "phone", "social", "linkedin", "github"]):
+                if "contact" in sec_title:
+                    matching_sections.append("## " + sec if i > 0 else sec)
+                    
+        if matching_sections:
+            return "\n\n".join(matching_sections)
+            
+        # Default to first 3 sections (Background + Skills + Contact) if no specific keywords matched
+        # sections[0] is the main title, sections[1] is Section 1 (Personal Identity), etc.
+        return "\n\n## ".join(sections[:4])
     except Exception as e:
-        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science."
+        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra."
 
 @tool
 def calculator(expression: str) -> str:
