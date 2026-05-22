@@ -10,3 +10,4 @@ langchain-chroma
 langchain-google-genai
 google-search-results
 requests
+pysqlite3-binary

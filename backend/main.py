@@ -1,3 +1,9 @@
+# --- CRITICAL RENDER FIX FOR CHROMA DB ---
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# -----------------------------------------
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -24,12 +30,10 @@ load_dotenv(dotenv_path="../.env")
 load_dotenv()
 
 # Map the .env keys to what LangChain expects if they differ
-if os.getenv("Gemini_Api_Key"):
-    os.environ["GOOGLE_API_KEY"] = os.getenv("Gemini_Api_Key")
-if os.getenv("Groq_Api_Key"):
-    os.environ["GROQ_API_KEY"] = os.getenv("Groq_Api_Key")
-if os.getenv("Serp_Api_Key"):
-    os.environ["SERPAPI_API_KEY"] = os.getenv("Serp_Api_Key")
+# AND provide fallback dummy keys so the app doesn't crash at startup if missing!
+os.environ["GOOGLE_API_KEY"] = os.getenv("Gemini_Api_Key", os.getenv("GOOGLE_API_KEY", "dummy_google_key"))
+os.environ["GROQ_API_KEY"] = os.getenv("Groq_Api_Key", os.getenv("GROQ_API_KEY", "dummy_groq_key"))
+os.environ["SERPAPI_API_KEY"] = os.getenv("Serp_Api_Key", os.getenv("SERPAPI_API_KEY", "dummy_serp_key"))
 
 app = FastAPI()
 
@@ -112,11 +116,18 @@ def get_weather(city: str) -> str:
         return f"Error fetching weather: {e}"
 
 # Set up SERP API search tool
-search_tool_func = SerpAPIWrapper()
+try:
+    search_tool_func = SerpAPIWrapper()
+except Exception as e:
+    print(f"Failed to initialize SerpAPI: {e}")
+    search_tool_func = None
+
 @tool
 def web_search(query: str) -> str:
     """A search engine. Useful for when you need to answer questions about current events. Input should be a search query."""
-    return search_tool_func.run(query)
+    if search_tool_func:
+        return search_tool_func.run(query)
+    return "Web search is currently unavailable."
 
 tools = [resume_tool, web_search, calculator, get_weather]
 
