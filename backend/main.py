@@ -56,7 +56,16 @@ llm = ChatGroq(
 # --- Global Vector Store / RAG Setup ---
 retriever = None
 try:
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # Auto-build RAG database if it's missing or empty
+    if not os.path.exists("./twin_chroma_db") or len(os.listdir("./twin_chroma_db")) == 0:
+        print("Chroma DB not found or empty. Auto-building RAG database...")
+        try:
+            from rag_setup import build_rag
+            build_rag()
+        except Exception as build_err:
+            print(f"Failed to auto-build RAG database: {build_err}")
+
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
     vector_store = Chroma(
         persist_directory="./twin_chroma_db",
         collection_name="krishna_knowledge",
