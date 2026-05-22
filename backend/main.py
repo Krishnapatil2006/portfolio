@@ -237,7 +237,7 @@ async def chat_endpoint(req: ChatRequest):
         )
         return {"reply": response["output"]}
     except Exception as e:
-        return {"error": str(e)}
+        return {"reply": f"Backend Error: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -196,6 +196,187 @@ A stunning, interactive portfolio website inspired by Steam's profile design, bu
 14. **Steam Notifications**: Satirical friend notifications appearing periodically
 15. **Info Modal**: Behind-the-scenes details about portfolio mechanics, XP system, and features
 
+---
+
+## 🤖 AI Digital Twin Chatbot
+
+### Problem Statement
+> *"Build Your Digital Twin with Tools and RAG"*
+
+This portfolio features a fully functional **AI-powered Digital Twin** — a smart AI version of Krishna Patil that talks like him, shares his skills from his resume, and helps recruiters and visitors with questions and daily tasks. Built with LangChain and Groq LLM, the chatbot combines **Retrieval-Augmented Generation (RAG)** and **multiple real-world tools** to create a truly personal AI companion.
+
+---
+
+### 🧠 Architecture Overview
+
+```
+User Message (Chat UI)
+        │
+        ▼
+FastAPI Backend (/api/chat)
+        │
+        ▼
+LangChain Tool-Calling Agent (Groq LLM)
+        │
+   ┌────┴────────────────────────────────┐
+   │                                     │
+   ▼                                     ▼
+RAG Pipeline (ChromaDB)          External Tools
+   │                              ├── Web Search (SerpAPI)
+   ▼                              ├── Weather API (WeatherStack)
+Resume & Knowledge Base           ├── Calculator
+   │                              ├── Schedule Meeting
+   ▼                              └── Check Calendar
+Accurate Personal Info
+```
+
+---
+
+### 🗂️ What Powers the Chatbot
+
+#### 1. 🦜 LangChain Agent Framework
+- Uses **`create_tool_calling_agent`** — the modern LangChain agent that natively routes questions to the correct tool
+- Wrapped in **`AgentExecutor`** with `handle_parsing_errors=True` for robust production behaviour
+- **`RunnableWithMessageHistory`** maintains full per-session conversation memory, allowing natural multi-turn dialogue
+
+#### 2. 🤖 LLM: Groq (llama-3.1-8b-instant)
+- Model: **`llama-3.1-8b-instant`** via the `langchain-groq` integration
+- Config: `temperature=0.3`, `max_tokens=1024`
+- Chosen for its exceptional **speed** (Groq's LPU hardware) and **quality** for conversational tasks
+
+#### 3. 📚 RAG Pipeline — Resume Knowledge Base
+- **Document Loading**: `resume_text.txt` and `knowledge_base.md` are loaded with LangChain's `TextLoader`
+- **Chunking**: `RecursiveCharacterTextSplitter` with `chunk_size=500`, `chunk_overlap=100`
+- **Embeddings**: **Google Generative AI Embeddings** (`models/embedding-001`) via `langchain-google-genai`
+- **Vector Store**: **ChromaDB** persisted to `./twin_chroma_db` — stores and retrieves the most relevant 5 chunks per query
+- **Retrieval**: On every question about Krishna, the agent fetches relevant document chunks and feeds them as context to the LLM
+
+#### 4. 🛠️ Tools (Satisfies the "2+ Tool" Requirement)
+
+| Tool | Description | API Used |
+|---|---|---|
+| `resume_knowledge_base` | Answers questions about Krishna's education, skills, projects, and experience using RAG | ChromaDB + Google Embeddings |
+| `web_search` | Searches the web for current events and general knowledge | SerpAPI |
+| `get_weather` | Fetches real-time weather for any city | WeatherStack API |
+| `calculator` | Evaluates mathematical expressions safely | Python `eval` |
+| `schedule_meeting` | Schedules a meeting with Krishna, checks for conflicts | Local `meetings.json` |
+| `check_schedule` | Checks Krishna's schedule and free days for any date | Local `meetings.json` |
+| `get_current_datetime` | Returns the current date and time | Python `datetime` |
+
+#### 5. 🗣️ Persona & System Prompt
+The agent is given a custom **system prompt** that instructs it to:
+- Act and speak **exactly like Krishna Patil** in the first person
+- Always use the `resume_knowledge_base` tool when asked about personal background
+- Use `check_schedule` and `schedule_meeting` when a recruiter wants to book a meeting
+- Keep responses **short, conversational, and professional** — like a real text message exchange
+
+#### 6. 🏛️ FastAPI Backend
+- Serves the chatbot on `POST /api/chat`
+- Accepts `{ "message": string, "session_id": string }`
+- Returns `{ "reply": string }`
+- CORS enabled for cross-origin requests from the portfolio frontend
+
+---
+
+### 📡 Judging Criteria Coverage
+
+| Criteria | How it's Met |
+|---|---|
+| **Helpful in daily life tasks** | Weather, calculator, web search, and calendar scheduling tools |
+| **Represents and impresses recruiters** | RAG-powered resume knowledge, first-person Krishna persona, scheduling support |
+| **At least 2 useful tools** | 7 tools implemented (far exceeds the minimum) |
+| **RAG Implementation** | Full ChromaDB pipeline with Google Embeddings and resume/knowledge base |
+| **Chosen LLM** | Groq (llama-3.1-8b-instant) |
+| **Chosen Embedding Model** | Google Generative AI (`models/embedding-001`) |
+
+---
+
+### 📁 Backend File Structure
+
+```
+backend/
+├── main.py              # FastAPI app + Agent + all 7 tools
+├── rag_setup.py         # Script to build ChromaDB from knowledge base
+├── chat.py              # Standalone terminal chat interface (dev/testing)
+├── app.py               # Streamlit UI version (alternative interface)
+├── knowledge_base.md    # Comprehensive personal knowledge base
+├── resume_text.txt      # Krishna's resume for RAG ingestion
+├── requirements.txt     # Pinned Python dependencies
+├── runtime.txt          # Forces Python 3.11.9 on Render
+├── meetings.json        # Auto-created: stores scheduled meetings
+└── twin_chroma_db/      # Auto-created: persisted ChromaDB vector store
+```
+
+---
+
+### 🔧 Backend Setup (Local Development)
+
+#### Prerequisites
+- Python 3.11+
+- API Keys: Groq, Google Gemini, SerpAPI, WeatherStack
+
+#### Steps
+
+1. **Navigate to backend**
+```bash
+cd backend
+```
+
+2. **Create a virtual environment**
+```bash
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
+```
+
+3. **Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+4. **Configure environment variables** — create a `.env` file:
+```env
+Groq_Api_Key=your_groq_api_key
+Gemini_Api_Key=your_google_gemini_api_key
+Serp_Api_Key=your_serpapi_key
+WeatherStack_Api_Key=your_weatherstack_key
+Calender_Api_Key=your_google_calendar_api_key
+```
+
+5. **Build the RAG knowledge base** (run once)
+```bash
+python rag_setup.py
+```
+
+6. **Start the backend server**
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+The API is now available at `http://localhost:8000/api/chat`.
+
+---
+
+### ☁️ Backend Deployment (Render)
+
+The backend is deployed on [Render](https://render.com) as a Python web service.
+
+**Environment Variables to add in Render Dashboard:**
+
+| Key | Value |
+|---|---|
+| `Groq_Api_Key` | Your Groq API key |
+| `Gemini_Api_Key` | Your Google Gemini API key |
+| `Serp_Api_Key` | Your SerpAPI key |
+| `WeatherStack_Api_Key` | Your WeatherStack key |
+| `PYTHON_VERSION` | `3.11.9` |
+
+**Build Command:** `pip install -r requirements.txt`
+**Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+**Root Directory:** `backend`
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend
