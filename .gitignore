@@ -4,3 +4,5 @@ dist/
 __pycache__/
 backend/twin_chroma_db/
 backend/rag_chroma_db/
+backend/chatbot_details.md
+backend/test_agent.py
