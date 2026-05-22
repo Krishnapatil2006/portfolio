@@ -45,10 +45,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Use the smarter llama-3.3-70b-versatile model which handles tool-calling flawlessly
-# avoiding the parser issues and output generation failures of the 8B model.
+# Use llama-3.1-8b-instant to prevent daily token rate limit issues on the free tier,
+# while maintaining fast and accurate tool-calling.
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",  
+    model="llama-3.1-8b-instant",  
     temperature=0.3,
     max_tokens=1024,
 )
@@ -79,15 +79,13 @@ except Exception as e:
 
 @tool
 def resume_knowledge_base(query: str) -> str:
-    """Use this tool to answer questions about Krishna Patil's personal background, education, skills, projects, and experiences."""
+    """Use this tool to retrieve information about Krishna Patil's personal background, education, skills, projects, and experiences."""
     global retriever
     if retriever is not None:
         try:
             docs = retriever.invoke(query)
-            context = "\n".join([d.page_content for d in docs])
-            prompt = f"Answer the following question based only on the provided context:\n\n<context>\n{context}\n</context>\n\nQuestion: {query}"
-            response = llm.invoke(prompt)
-            return response.content
+            if docs:
+                return "\n\n".join([d.page_content for d in docs])
         except Exception as e:
             print(f"Error querying retriever: {e}")
             
