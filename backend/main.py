@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import requests
+import json
+from datetime import datetime
 from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
@@ -115,6 +117,58 @@ def get_weather(city: str) -> str:
     except Exception as e:
         return f"Error fetching weather: {e}"
 
+@tool
+def get_current_datetime() -> str:
+    """Get the current date and time."""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+@tool
+def schedule_meeting(date: str, time: str, name: str, email: str) -> str:
+    """Schedule a meeting or meetup with Krishna.
+    Provide date (YYYY-MM-DD), time (HH:MM), name, and email of the person.
+    """
+    meeting_file = "meetings.json"
+    new_meeting = {"date": date, "time": time, "name": name, "email": email}
+    
+    try:
+        if os.path.exists(meeting_file):
+            with open(meeting_file, "r") as f:
+                meetings = json.load(f)
+        else:
+            meetings = []
+            
+        # Check for conflicts
+        for m in meetings:
+            if m["date"] == date and m["time"] == time:
+                return f"Sorry, Krishna already has a meeting scheduled on {date} at {time}."
+                
+        meetings.append(new_meeting)
+        with open(meeting_file, "w") as f:
+            json.dump(meetings, f, indent=4)
+        return f"Meeting successfully scheduled with {name} on {date} at {time}. Krishna will reach out to {email} to confirm."
+    except Exception as e:
+        return f"Failed to schedule meeting: {str(e)}"
+
+@tool
+def check_schedule(date: str) -> str:
+    """Check Krishna's schedule and free days for a specific date (YYYY-MM-DD)."""
+    meeting_file = "meetings.json"
+    try:
+        if not os.path.exists(meeting_file):
+            return f"Krishna is completely free on {date}!"
+            
+        with open(meeting_file, "r") as f:
+            meetings = json.load(f)
+            
+        day_meetings = [m for m in meetings if m["date"] == date]
+        if not day_meetings:
+            return f"Krishna is completely free on {date}!"
+            
+        schedule = "\n".join([f"- {m['time']} with {m['name']}" for m in day_meetings])
+        return f"Krishna's schedule on {date}:\n{schedule}"
+    except Exception as e:
+        return f"Failed to check schedule: {str(e)}"
+
 # Set up SERP API search tool
 try:
     search_tool_func = SerpAPIWrapper()
@@ -129,7 +183,7 @@ def web_search(query: str) -> str:
         return search_tool_func.run(query)
     return "Web search is currently unavailable."
 
-tools = [resume_tool, web_search, calculator, get_weather]
+tools = [resume_tool, web_search, calculator, get_weather, get_current_datetime, schedule_meeting, check_schedule]
 
 # --- Agent Setup ---
 qa_system_prompt = """You are the AI Twin of Krishna Chandrakant Patil. You act, speak, and respond exactly like him. 
@@ -141,6 +195,7 @@ Do NOT give long answers unless explicitly asked for details. If the user asks a
 
 Use your tools to answer questions accurately.
 If asked about yourself, your skills, or projects, ALWAYS use the 'resume_knowledge_base' tool.
+If a recruiter wants to schedule a meetup or meeting, use 'check_schedule' and 'schedule_meeting'. Use 'get_current_datetime' if you need the current date.
 Always speak in the first person ("I am Krishna", "I built this").
 Avoid markdown formatting like **bold** when unnecessary, keep it natural.
 """
