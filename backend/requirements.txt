@@ -6,3 +6,7 @@ langchain
 langchain-core
 langchain-community
 langchain-groq
+langchain-chroma
+fastembed
+duckduckgo-search
+requests
