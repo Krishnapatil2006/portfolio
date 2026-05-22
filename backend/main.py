@@ -68,7 +68,7 @@ try:
         except Exception as build_err:
             print(f"Failed to auto-build RAG database: {build_err}")
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
     vector_store = Chroma(
         persist_directory="./twin_chroma_db",
         collection_name="krishna_knowledge",

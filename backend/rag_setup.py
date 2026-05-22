@@ -29,7 +29,7 @@ def build_rag():
     gemini_key = os.getenv("Gemini_Api_Key") or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if gemini_key:
         os.environ["GOOGLE_API_KEY"] = gemini_key.strip()
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
 
     # Create and persist the vector store
     vector_store = Chroma.from_documents(
