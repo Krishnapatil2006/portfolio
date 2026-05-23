@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import os
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, date as date_obj
 from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
@@ -68,7 +68,7 @@ try:
         except Exception as build_err:
             print(f"Failed to auto-build RAG database: {build_err}")
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vector_store = Chroma(
         persist_directory="./twin_chroma_db",
         collection_name="krishna_knowledge",
@@ -81,9 +81,12 @@ except Exception as e:
 # --- Tools Setup (Defined in global scope to ensure proper serialization) ---
 
 @tool
-def resume_knowledge_base(query: str) -> str:
+def resume_knowledge_base(query: str = "") -> str:
     """Use this tool to retrieve information about Krishna Patil's personal background, education, skills, projects, and experiences."""
     global retriever
+    if not query:
+        query = "Krishna Patil overview"
+        
     if retriever is not None:
         try:
             docs = retriever.invoke(query)
@@ -129,8 +132,10 @@ def resume_knowledge_base(query: str) -> str:
         return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra."
 
 @tool
-def calculator(expression: str) -> str:
+def calculator(expression: str = "") -> str:
     """Evaluate a mathematical expression. Use this tool for any math-related queries."""
+    if not expression:
+        return "Error: No expression provided."
     try:
         allowed_chars = "0123456789+-*/(). "
         if not all(c in allowed_chars for c in expression):
@@ -165,50 +170,98 @@ def get_current_datetime(query: str = "") -> str:
 
 @tool
 def schedule_meeting(date: str, time: str, name: str, email: str) -> str:
-    """Schedule a meeting or meetup with Krishna.
-    Provide date (YYYY-MM-DD), time (HH:MM), name, and email of the person.
+    """Schedule a meeting, interview, or meetup with Krishna Patil.
+    Krishna is ALWAYS free on Saturdays and Sundays.
+    Provide date (YYYY-MM-DD), time (HH:MM 24-hour format), name, and email.
     """
     meeting_file = "meetings.json"
-    new_meeting = {"date": date, "time": time, "name": name, "email": email}
-    
     try:
+        # Validate date format
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return f"Invalid date format '{date}'. Please use YYYY-MM-DD (e.g. 2025-06-07)."
+
+        # Validate time format
+        try:
+            datetime.strptime(time, "%H:%M")
+        except ValueError:
+            return f"Invalid time format '{time}'. Please use HH:MM (e.g. 10:30)."
+
+        # Check if it's a weekday — Krishna prefers weekends but is flexible
+        weekday = parsed_date.weekday()  # 0=Mon ... 5=Sat, 6=Sun
+        day_name = parsed_date.strftime("%A")
+        weekend_note = ""
+        if weekday < 5:
+            weekend_note = f" Note: {day_name} is a weekday — Krishna prefers Saturdays or Sundays for interviews/meetups, but is flexible."
+
         if os.path.exists(meeting_file):
             with open(meeting_file, "r") as f:
                 meetings = json.load(f)
         else:
             meetings = []
-            
-        # Check for conflicts
+
+        # Check for time conflicts
         for m in meetings:
             if m["date"] == date and m["time"] == time:
-                return f"Sorry, Krishna already has a meeting scheduled on {date} at {time}."
-                
-        meetings.append(new_meeting)
+                return (f"Sorry, Krishna already has a meeting on {date} at {time}. "
+                        f"Please pick a different time slot.{weekend_note}")
+
+        meetings.append({"date": date, "time": time, "name": name, "email": email})
         with open(meeting_file, "w") as f:
             json.dump(meetings, f, indent=4)
-        return f"Meeting successfully scheduled with {name} on {date} at {time}. Krishna will reach out to {email} to confirm."
+        return (f"Done! Meeting scheduled with {name} on {date} ({day_name}) at {time}. "
+                f"Krishna will reach out to {email} to confirm.{weekend_note}")
     except Exception as e:
         return f"Failed to schedule meeting: {str(e)}"
 
 @tool
 def check_schedule(date: str) -> str:
-    """Check Krishna's schedule and free days for a specific date (YYYY-MM-DD)."""
+    """Check Krishna's availability for a specific date (YYYY-MM-DD).
+    Krishna is ALWAYS available on Saturdays and Sundays for interviews and meetups.
+    """
     meeting_file = "meetings.json"
     try:
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return f"Invalid date format '{date}'. Please use YYYY-MM-DD."
+
+        weekday = parsed_date.weekday()  # 5=Sat, 6=Sun
+        day_name = parsed_date.strftime("%A")
+        is_weekend = weekday >= 5
+
         if not os.path.exists(meeting_file):
-            return f"Krishna is completely free on {date}!"
-            
+            if is_weekend:
+                return f"Krishna is completely free on {date} ({day_name})! Weekends are perfect for interviews and meetups."
+            return f"Krishna is free on {date} ({day_name}), though he prefers Saturdays or Sundays for interviews."
+
         with open(meeting_file, "r") as f:
             meetings = json.load(f)
-            
+
         day_meetings = [m for m in meetings if m["date"] == date]
         if not day_meetings:
-            return f"Krishna is completely free on {date}!"
-            
+            if is_weekend:
+                return f"Krishna is completely free on {date} ({day_name})! Great day for an interview or meetup."
+            return f"Krishna is free on {date} ({day_name}). He prefers weekends (Sat/Sun) for meetings."
+
         schedule = "\n".join([f"- {m['time']} with {m['name']}" for m in day_meetings])
-        return f"Krishna's schedule on {date}:\n{schedule}"
+        return (f"Krishna's schedule on {date} ({day_name}):\n{schedule}\n"
+                f"He may still have open slots — just pick a different time!")
     except Exception as e:
         return f"Failed to check schedule: {str(e)}"
+
+@tool
+def get_free_slots(query: str = "") -> str:
+    """Get Krishna's general availability and preferred meeting days.
+    Use this when someone asks when Krishna is free, available, or wants to schedule.
+    """
+    return (
+        "Krishna is available EVERY Saturday and Sunday for interviews, meetups, and calls. "
+        "He is flexible with time slots — morning (10:00-12:00) and afternoon (14:00-18:00) work best. "
+        "For weekday meetings, he can arrange something after 5:00 PM. "
+        "To book a slot, share your name, email, preferred date (Sat or Sun), and time."
+    )
 
 # Set up SERP API search tool
 try:
@@ -224,21 +277,26 @@ def web_search(query: str) -> str:
         return search_tool_func.run(query)
     return "Web search is currently unavailable."
 
-tools = [resume_knowledge_base, web_search, calculator, get_weather, get_current_datetime, schedule_meeting, check_schedule]
+tools = [resume_knowledge_base, web_search, calculator, get_weather, get_current_datetime, schedule_meeting, check_schedule, get_free_slots]
 
 # --- Agent Setup ---
-qa_system_prompt = """You are the AI Twin of Krishna Chandrakant Patil. You act, speak, and respond exactly like him. 
-You are a passionate BCA student (3rd Year) specializing in Computational Science from Pachora, Maharashtra, India.
-You are currently talking to a recruiter, potential employer, or a visitor on your portfolio website.
+qa_system_prompt = """You are the AI Twin of Krishna Chandrakant Patil — a real person, not a bot.
+You speak exactly like him: confident, casual, and direct. You are a 3rd-year BCA student specializing
+in Computational Science from Pachora, Maharashtra, India. You are talking to a recruiter or portfolio visitor.
 
-CRITICAL INSTRUCTION: Keep your responses extremely short, direct, and concise, just like a real casual conversation or a text message. 
-Do NOT give long answers unless explicitly asked for details. If the user asks a small question, give a one or two sentence answer max. 
-
-Use your tools to answer questions accurately.
-If asked about yourself, your skills, or projects, ALWAYS use the 'resume_knowledge_base' tool.
-If a recruiter wants to schedule a meetup or meeting, use 'check_schedule' and 'schedule_meeting'. Use 'get_current_datetime' if you need the current date.
-Always speak in the first person ("I am Krishna", "I built this").
-Avoid markdown formatting like **bold** when unnecessary, keep it natural.
+CRITICAL RULES:
+1. Be SHORT and DIRECT. One or two sentences max unless asked for detail.
+2. Handle typos, misspellings, and indirect questions gracefully — always infer intent and respond helpfully.
+3. Never say you are an AI, bot, or language model. You ARE Krishna.
+4. For ANY question about yourself, skills, projects, or background — use the 'resume_knowledge_base' tool FIRST.
+5. For scheduling/availability: Krishna is FREE every Saturday and Sunday for interviews, calls, and meetups.
+   - Use 'get_free_slots' if someone asks when he is free.
+   - Use 'check_schedule' then 'schedule_meeting' to book a slot.
+   - Use 'get_current_datetime' to determine today's date if needed.
+6. For nonsensical or totally off-topic questions, gently redirect: "That's a fun one! But let's keep it focused — want to know about my projects or skills?"
+7. If a tool fails, answer from memory or ask for clarification. NEVER crash or show errors to the user.
+8. Speak in first person always: "I built...", "I'm currently...", "My project..."
+9. Keep it natural — avoid unnecessary markdown like **bold** or bullet lists in short replies.
 """
 
 prompt = ChatPromptTemplate.from_messages(
@@ -251,7 +309,14 @@ prompt = ChatPromptTemplate.from_messages(
 )
 
 agent = create_tool_calling_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+agent_executor = AgentExecutor(
+    agent=agent,
+    tools=tools,
+    verbose=True,
+    handle_parsing_errors=True,   # Never crash on malformed LLM output
+    max_iterations=6,             # Prevent infinite loops
+    return_intermediate_steps=False,
+)
 
 store = {}
 
@@ -273,14 +338,31 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
+    # Layer 1: Try the full conversational agent
     try:
         response = conversational_agent.invoke(
             {"input": req.message},
             config={"configurable": {"session_id": req.session_id}}
         )
-        return {"reply": response["output"]}
+        reply = response.get("output", "")
+        if reply:
+            return {"reply": reply}
     except Exception as e:
-        return {"reply": f"Backend Error: {str(e)}"}
+        print(f"[Agent Error] {str(e)}")
+
+    # Layer 2: Try the bare LLM with the system persona (no tools)
+    try:
+        from langchain_core.messages import HumanMessage, SystemMessage
+        bare_response = llm.invoke([
+            SystemMessage(content=qa_system_prompt),
+            HumanMessage(content=req.message)
+        ])
+        return {"reply": bare_response.content}
+    except Exception as e2:
+        print(f"[LLM Fallback Error] {str(e2)}")
+
+    # Layer 3: Static safe fallback — the chatbot will NEVER return nothing
+    return {"reply": "Hey! I'm having a tiny technical moment. Could you ask me again, or try asking about my projects, skills, or availability for a meetup?"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -107,7 +107,12 @@
 - **Teamwork, Culture & Motivation**: I thrive in collaborative, fast-paced, and innovative environments. I have experience taking initiative as a solo developer but I really enjoy team settings where knowledge sharing is encouraged. I'm looking for a company culture that values continuous learning and innovation. I am motivated by complex problem-solving and building tech that actually helps people.
 - **Handling Failure**: I view failures as learning opportunities. For instance, if a project hits a roadblock or an ML model isn't generalizing well, I analyze what went wrong, adapt the strategy, and document the learnings to avoid repeating the same mistakes. 
 - **5-Year Plan (Career Goals)**: In 5 years, I see myself as a Senior Full Stack AI Engineer or Tech Lead, designing scalable AI systems and mentoring younger developers. My dream job involves continuous innovation at the intersection of web development and Artificial Intelligence.
-
-
+## 9. Scheduling & Availability
+- **Free Days**: Every Saturday and Sunday — completely free for interviews, calls, meetups, or recruiter Q&A sessions.
+- **Preferred Interview Times**: Morning (10:00 AM – 12:00 PM IST) or Afternoon (2:00 PM – 6:00 PM IST) on weekends.
+- **Weekday Availability**: Available after 5:00 PM on weekdays if needed.
+- **How to Book**: Provide your name, email, preferred date (Saturday or Sunday works best), and time. Krishna will confirm via email.
+- **Timezone**: IST (Indian Standard Time, UTC+5:30).
+- **Mode**: Open to Google Meet, Zoom, Microsoft Teams, or in-person (Pachora/Jalgaon area).
 
 
