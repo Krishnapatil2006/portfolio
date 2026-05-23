@@ -127,6 +127,71 @@ const TwinChatBot: React.FC = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Lightweight markdown renderer — no extra dependencies
+  const formatBotMessage = (text: string): React.ReactNode => {
+    const lines = text.split('\n').filter(l => l !== undefined);
+    const elements: React.ReactNode[] = [];
+    let i = 0;
+
+    const parseLine = (line: string): React.ReactNode => {
+      // Convert **bold** to <strong>
+      const parts = line.split(/(\*\*[^*]+\*\*)/g);
+      return parts.map((part, idx) =>
+        part.startsWith('**') && part.endsWith('**')
+          ? <strong key={idx}>{part.slice(2, -2)}</strong>
+          : <span key={idx}>{part}</span>
+      );
+    };
+
+    while (i < lines.length) {
+      const line = lines[i].trim();
+
+      // Numbered list item: "1. text" or "1) text"
+      if (/^\d+[.)\s]/.test(line)) {
+        const listItems: React.ReactNode[] = [];
+        while (i < lines.length && /^\d+[.)\s]/.test(lines[i].trim())) {
+          const content = lines[i].trim().replace(/^\d+[.)\s]+/, '');
+          listItems.push(<li key={i}>{parseLine(content)}</li>);
+          i++;
+        }
+        elements.push(<ol key={`ol-${i}`} className="bot-list">{listItems}</ol>);
+        continue;
+      }
+
+      // Bullet list item: "- text" or "• text"
+      if (/^[-•*]\s/.test(line)) {
+        const listItems: React.ReactNode[] = [];
+        while (i < lines.length && /^[-•*]\s/.test(lines[i].trim())) {
+          const content = lines[i].trim().replace(/^[-•*]\s+/, '');
+          listItems.push(<li key={i}>{parseLine(content)}</li>);
+          i++;
+        }
+        elements.push(<ul key={`ul-${i}`} className="bot-list">{listItems}</ul>);
+        continue;
+      }
+
+      // Section header: line ending with ':' or starting with '#'
+      if (line.endsWith(':') && line.length < 60 && !line.startsWith('http')) {
+        elements.push(<p key={i} className="bot-section-header">{parseLine(line)}</p>);
+        i++;
+        continue;
+      }
+
+      // Empty line — small gap
+      if (line === '') {
+        elements.push(<div key={i} className="bot-spacer" />);
+        i++;
+        continue;
+      }
+
+      // Regular paragraph line
+      elements.push(<p key={i} className="bot-para">{parseLine(line)}</p>);
+      i++;
+    }
+
+    return <div className="bot-formatted">{elements}</div>;
+  };
+
   return (
     <div className="twin-chat-container">
       {isOpen && (
@@ -153,7 +218,10 @@ const TwinChatBot: React.FC = () => {
             {messages.map(msg => (
               <div key={msg.id} className={`chat-msg-wrapper ${msg.sender}`}>
                 <div className={`chat-msg ${msg.sender} ${msg.isError ? 'error' : ''}`}>
-                  {msg.text}
+                  {msg.sender === 'bot'
+                    ? formatBotMessage(msg.text)
+                    : msg.text
+                  }
                 </div>
                 <span className="chat-time">{formatTime(msg.timestamp)}</span>
               </div>
