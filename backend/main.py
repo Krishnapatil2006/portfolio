@@ -381,21 +381,125 @@ class ChatRequest(BaseModel):
     message: str
     session_id: str = "portfolio_visitor"
 
+# --- Fast-path: instant answers for greetings & one-word queries (no agent round-trip) ---
+
+# Pure greetings — return instantly without touching the LLM at all
+INSTANT_REPLIES = {
+    "hi": "Hey! I'm Krishna's AI Twin. Ask me about my projects, skills, or schedule a meeting!",
+    "hey": "Hey there! What would you like to know about Krishna?",
+    "hello": "Hello! I'm Krishna Patil's AI Twin. What can I help you with?",
+    "yo": "Yo! What's up? Ask me anything about Krishna's work or projects!",
+    "hii": "Hey! I'm Krishna's AI Twin. Ask me about my projects, skills, or schedule a meeting!",
+    "helo": "Hello! I'm Krishna Patil's AI Twin. What can I help you with?",
+    "sup": "Hey! Ready to chat. Ask me about my skills, projects, or when we can meet!",
+    "ok": "Sure! What else would you like to know?",
+    "okay": "Sure! What else would you like to know?",
+    "thanks": "Happy to help! Anything else you'd like to know about Krishna?",
+    "thank you": "You're welcome! Feel free to ask about projects, skills, or scheduling a call!",
+    "bye": "Thanks for stopping by! Reach out anytime on LinkedIn or email. Goodbye!",
+    "goodbye": "Thanks for visiting! Feel free to connect on LinkedIn. Goodbye!",
+}
+
+# One-word topic triggers — fetch context immediately and skip agent tool loop
+TOPIC_KEYWORDS = {
+    "projects":   "projects",
+    "project":    "projects",
+    "proejcts":   "projects",
+    "projcts":    "projects",
+    "porjects":   "projects",
+    "skills":     "skills",
+    "skill":      "skills",
+    "skils":      "skills",
+    "tech":       "skills",
+    "stack":      "skills",
+    "contact":    "contact",
+    "email":      "contact",
+    "linkedin":   "contact",
+    "github":     "contact",
+    "links":      "contact",
+    "portfolio":  "contact",
+    "schedule":   "schedule",
+    "meeting":    "schedule",
+    "meetup":     "schedule",
+    "available":  "schedule",
+    "free":       "schedule",
+    "saturday":   "schedule",
+    "sunday":     "schedule",
+    "education":  "education",
+    "college":    "education",
+    "bca":        "education",
+    "degree":     "education",
+    "experience": "experience",
+    "internship": "experience",
+    "intern":     "experience",
+    "work":       "experience",
+    "hobbies":    "hobbies",
+    "hobby":      "hobbies",
+    "interests":  "hobbies",
+    "sports":     "hobbies",
+    "badminton":  "hobbies",
+    "gaming":     "hobbies",
+    "anime":      "hobbies",
+}
+
+TOPIC_CONTEXT = {
+    "projects":   "give me full details of all my GitHub projects",
+    "skills":     "what are Krishna's technical skills and expertise",
+    "contact":    "what are Krishna's contact details, portfolio links, LinkedIn, GitHub",
+    "schedule":   "what is Krishna's availability for meetings and interviews",
+    "education":  "what is Krishna's educational background and qualifications",
+    "experience": "what is Krishna's work experience and internships",
+    "hobbies":    "what are Krishna's hobbies, interests and personal life",
+}
+
+def fast_path_reply(msg: str):
+    """Returns an instant reply for simple/short queries, or None to proceed to the full agent."""
+    clean = msg.strip().lower().rstrip("!?.,")
+
+    # Exact match for greetings
+    if clean in INSTANT_REPLIES:
+        return INSTANT_REPLIES[clean]
+
+    # Single-word or very short (<=2 words) topic queries
+    words = clean.split()
+    if len(words) <= 2:
+        for word in words:
+            if word in TOPIC_KEYWORDS:
+                topic = TOPIC_KEYWORDS[word]
+                # Pre-fetch context and do a bare LLM call — no tool round-trip
+                context = resume_knowledge_base.func(TOPIC_CONTEXT[topic])
+                try:
+                    from langchain_core.messages import HumanMessage, SystemMessage
+                    resp = llm.invoke([
+                        SystemMessage(content=qa_system_prompt),
+                        HumanMessage(content=f"Context:\n{context}\n\nQuestion: {msg}"),
+                    ])
+                    return resp.content
+                except Exception:
+                    return context[:800]  # Return raw context if LLM fails
+    return None  # Not a fast-path query, let the full agent handle it
+
+
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
-    # Layer 1: Try the full conversational agent
+    # Layer 0: Instant fast-path for greetings and one-word topics (zero agent overhead)
+    fast = fast_path_reply(req.message)
+    if fast:
+        return {"reply": fast}
+
+    # Layer 1: Full conversational agent (multi-turn, tool-calling)
     try:
         response = conversational_agent.invoke(
             {"input": req.message},
             config={"configurable": {"session_id": req.session_id}}
         )
-        reply = response.get("output", "")
+        reply = response.get("output", "").strip()
         if reply:
             return {"reply": reply}
     except Exception as e:
         print(f"[Agent Error] {str(e)}")
 
-    # Layer 2: Try the bare LLM with the system persona (no tools)
+    # Layer 2: Bare LLM with persona (no tools, still intelligent)
     try:
         from langchain_core.messages import HumanMessage, SystemMessage
         bare_response = llm.invoke([
@@ -406,8 +510,8 @@ async def chat_endpoint(req: ChatRequest):
     except Exception as e2:
         print(f"[LLM Fallback Error] {str(e2)}")
 
-    # Layer 3: Static safe fallback — the chatbot will NEVER return nothing
-    return {"reply": "Hey! I'm having a tiny technical moment. Could you ask me again, or try asking about my projects, skills, or availability for a meetup?"}
+    # Layer 3: Static safe fallback — chatbot will NEVER return nothing
+    return {"reply": "Hey! I'm having a tiny moment. Could you ask again, or try asking about my projects, skills, or when we can meet?"}
 
 if __name__ == "__main__":
     import uvicorn
