@@ -48,6 +48,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health_check():
+    """Lightweight health check — used by frontend to wake up Render and confirm the server is alive."""
+    return {"status": "ok", "service": "krishna-ai-twin"}
+
+@app.get("/api/ping")
+async def ping():
+    """Alias ping endpoint for wake-up calls."""
+    return {"pong": True}
+
 # Use llama-3.1-8b-instant to prevent daily token rate limit issues on the free tier,
 # while maintaining fast and accurate tool-calling.
 llm = ChatGroq(
