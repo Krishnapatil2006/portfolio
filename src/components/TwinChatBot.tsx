@@ -22,7 +22,6 @@ const TwinChatBot: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [backendStatus, setBackendStatus] = useState<'checking' | 'waking' | 'ready' | 'offline'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Dragging logic
@@ -60,58 +59,9 @@ const TwinChatBot: React.FC = () => {
     }
   };
 
-  // Ping/wake up backend
-  const checkBackendStatus = async (maxAttempts = 5) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
-    
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        if (attempt === 1) {
-          setBackendStatus('checking');
-        } else {
-          setBackendStatus('waking');
-        }
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout per ping
-        
-        const res = await fetch(`${backendUrl}/health`, {
-          method: 'GET',
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (res.ok) {
-          setBackendStatus('ready');
-          return true;
-        }
-      } catch (err) {
-        console.warn(`Backend ping attempt ${attempt} failed:`, err);
-      }
-      
-      // Wait 3 seconds before next ping
-      if (attempt < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-    }
-    
-    setBackendStatus('offline');
-    return false;
-  };
-
-  // Trigger wake-up on load and when chat window is opened
-  useEffect(() => {
-    checkBackendStatus(3);
-  }, []);
-
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
-      // If we are marked offline or checking, run a verification loop to trigger wake-up
-      if (backendStatus !== 'ready') {
-        checkBackendStatus(5);
-      }
     }
   }, [messages, isOpen]);
 
@@ -139,14 +89,6 @@ const TwinChatBot: React.FC = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
 
     try {
-      // If backend is currently offline/checking, attempt to wake it up again
-      if (backendStatus !== 'ready') {
-        const isUp = await checkBackendStatus(1);
-        if (!isUp) {
-          throw new Error('Backend is sleeping or down');
-        }
-      }
-
       const res = await fetch(`${backendUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,7 +100,6 @@ const TwinChatBot: React.FC = () => {
       }
       
       const data = await res.json();
-      setBackendStatus('ready');
       
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -169,13 +110,10 @@ const TwinChatBot: React.FC = () => {
       
       setMessages(prev => [...prev, botMsg]);
     } catch (err) {
-      // If error occurs, trigger a silent wake-up sequence in the background
-      checkBackendStatus(8);
-
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'bot',
-        text: "The AI server is currently waking up from standby (Render's free tier spins down after inactivity). This usually takes 30-50 seconds. Please wait a moment and try sending your message again.",
+        text: "I'm currently offline or unreachable. Please ensure the backend server is running.",
         timestamp: new Date(),
         isError: true
       };
@@ -270,13 +208,7 @@ const TwinChatBot: React.FC = () => {
               <img src={portfolioConfig.personal.avatar} alt="Krishna" className="chat-avatar" />
               <div className="chat-title-wrapper">
                 <span className="chat-title">Krishna's AI Twin</span>
-                <span className={`chat-status ${backendStatus}`}>
-                  <span className={`status-dot-mini ${backendStatus}`}></span>
-                  {backendStatus === 'ready' && 'Online'}
-                  {backendStatus === 'checking' && 'Checking Status...'}
-                  {backendStatus === 'waking' && 'Waking Server (30-50s)...'}
-                  {backendStatus === 'offline' && 'Standby (Offline)'}
-                </span>
+                <span className="chat-status">Online</span>
               </div>
             </div>
             <button className="chat-close" onClick={() => setIsOpen(false)}>&times;</button>

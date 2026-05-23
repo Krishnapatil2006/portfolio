@@ -94,56 +94,19 @@
 
 .chat-status {
   font-size: 11px;
+  color: #a4d007;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 4px;
 }
 
-.chat-status.ready {
-  color: #a4d007;
-}
-
-.chat-status.checking {
-  color: #f1c40f;
-}
-
-.chat-status.waking {
-  color: #f39c12;
-}
-
-.chat-status.offline {
-  color: #95a5a6;
-}
-
-.status-dot-mini {
-  width: 7px;
-  height: 7px;
+.chat-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: #a4d007;
   border-radius: 50%;
   display: inline-block;
-}
-
-.status-dot-mini.ready {
-  background-color: #a4d007;
-  box-shadow: 0 0 6px #a4d007;
-}
-
-.status-dot-mini.checking,
-.status-dot-mini.waking {
-  background-color: #f39c12;
-  box-shadow: 0 0 6px #f39c12;
-  animation: pulse-dot 1.5s infinite ease-in-out;
-}
-
-.status-dot-mini.offline {
-  background-color: #e74c3c;
-  box-shadow: 0 0 4px #e74c3c;
-}
-
-@keyframes pulse-dot {
-  0% { transform: scale(0.9); opacity: 0.5; }
-  50% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.5; }
 }
 
 .chat-close {
