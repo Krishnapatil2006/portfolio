@@ -11,8 +11,9 @@ load_dotenv()
 
 # Files to index into the RAG vector DB
 KNOWLEDGE_FILES = [
-    "knowledge_base.md",       # Main personal info, skills, projects, scheduling
-    "chatbot_details.md",      # Technical twin documentation, architecture
+    "knowledge_base.md",       # Main personal info, skills, scheduling
+    "Projects_Info.md",        # Deep project analysis for all 48 GitHub repos
+    "chatbot_details.md",      # Technical twin documentation
     "resume_text.txt",         # Raw resume content
 ]
 

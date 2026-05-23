@@ -86,12 +86,41 @@ def resume_knowledge_base(query: str = "") -> str:
         except Exception as e:
             print(f"   [RAG Error] {e}")
 
-    # Local keyword-matching fallback
+    # Fallback: read from all knowledge files directly
+    fallback_files = [
+        ("Projects_Info.md", ["project", "github", "repo", "mediai", "kirito", "floodguard",
+                              "job recommend", "fake review", "fake news", "credit card",
+                              "bashaconvert", "basha", "kiri", "echo", "jarvis", "student",
+                              "iot", "game", "spotify", "elearning", "nlp",
+                              "work", "built", "created", "developed"]),
+        ("knowledge_base.md", []),
+    ]
     try:
-        with open("knowledge_base.md", "r", encoding="utf-8") as f:
+        query_lower = query.lower()
+        chosen_file = "knowledge_base.md"
+        for fname, keywords in fallback_files:
+            if keywords and any(k in query_lower for k in keywords):
+                if os.path.exists(fname):
+                    chosen_file = fname
+                    break
+
+        with open(chosen_file, "r", encoding="utf-8") as f:
             content = f.read()
+
+        if chosen_file == "Projects_Info.md":
+            sections = content.split("\n### ")
+            matched = []
+            for sec in sections:
+                title_line = sec.split("\n")[0].lower()
+                if any(k in title_line for k in query_lower.split()) or \
+                   any(k in query_lower for k in ["all", "best", "list", "project", "repo", "github"]):
+                    matched.append("### " + sec)
+            if matched:
+                return "\n\n".join(matched[:5])
+            return content[:4000]
+
         sections = content.split("\n## ")
-        q = query.lower()
+        q = query_lower
         matched = []
         for i, sec in enumerate(sections):
             title = sec.split("\n")[0].lower()
@@ -109,7 +138,7 @@ def resume_knowledge_base(query: str = "") -> str:
             return "\n\n".join(matched)
         return "\n\n## ".join(sections[:4])
     except Exception:
-        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra."
+        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra. I have built 48+ projects including AI systems, web apps, games, and tools."
 
 
 @tool

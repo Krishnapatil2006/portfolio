@@ -95,41 +95,67 @@ def resume_knowledge_base(query: str = "") -> str:
         except Exception as e:
             print(f"Error querying retriever: {e}")
             
-    # Fallback to smart local keyword-matching if Chroma failed or is empty (saves massive tokens)
+    # Fallback: read from all knowledge files directly (no embeddings needed)
+    # Priority: Projects_Info.md first for project queries, then knowledge_base.md
+    fallback_files = [
+        ("Projects_Info.md", ["project", "github", "repo", "mediai", "kirito", "floodguard",
+                              "job recommend", "fake review", "fake news", "credit card",
+                              "bashaconvert", "basha", "kiri", "echo", "jarvis", "student",
+                              "iot", "game", "spotify", "elearning", "nlp", "ml project",
+                              "machine learning project", "work", "built", "created", "developed"]),
+        ("knowledge_base.md", []),  # default fallback
+    ]
     try:
-        with open("knowledge_base.md", "r", encoding="utf-8") as f:
+        query_lower = query.lower()
+        chosen_file = "knowledge_base.md"  # default
+        for fname, keywords in fallback_files:
+            if keywords and any(k in query_lower for k in keywords):
+                if os.path.exists(fname):
+                    chosen_file = fname
+                    break
+
+        with open(chosen_file, "r", encoding="utf-8") as f:
             content = f.read()
-        
-        # Split content by markdown section headers
+
+        # For Projects_Info.md, do section-based search
+        if chosen_file == "Projects_Info.md":
+            sections = content.split("\n### ")
+            matched = []
+            for sec in sections:
+                title_line = sec.split("\n")[0].lower()
+                if any(k in title_line for k in query_lower.split()) or \
+                   any(k in query_lower for k in ["all", "best", "list", "project", "repo", "github"]):
+                    matched.append("### " + sec)
+            if matched:
+                # Return top 5 matching sections to keep response tight but complete
+                return "\n\n".join(matched[:5])
+            return content[:4000]  # Return first 4000 chars if no section match
+
+        # For knowledge_base.md, use keyword section matching
         sections = content.split("\n## ")
         matching_sections = []
-        
-        query_lower = query.lower()
         for i, sec in enumerate(sections):
             sec_title = sec.split("\n")[0].lower()
-            
-            # Match keywords to return specific relevant sections
             if any(k in query_lower for k in ["project", "work", "experience", "mediai", "kirito", "job", "fake review", "basha"]):
                 if "project" in sec_title or "work" in sec_title:
-                    matching_sections.append("## " + sec if i > 0 else sec)
+                    matching_sections.append(("## " + sec) if i > 0 else sec)
             elif any(k in query_lower for k in ["hobby", "interest", "sport", "game", "music", "badminton", "anime", "harry potter"]):
                 if "interest" in sec_title:
-                    matching_sections.append("## " + sec if i > 0 else sec)
-            elif any(k in query_lower for k in ["skills", "expert", "tech", "languages", "programming"]):
-                if "skills" in sec_title:
-                    matching_sections.append("## " + sec if i > 0 else sec)
-            elif any(k in query_lower for k in ["contact", "email", "phone", "social", "linkedin", "github"]):
+                    matching_sections.append(("## " + sec) if i > 0 else sec)
+            elif any(k in query_lower for k in ["skill", "expert", "tech", "language", "programming"]):
+                if "skill" in sec_title:
+                    matching_sections.append(("## " + sec) if i > 0 else sec)
+            elif any(k in query_lower for k in ["contact", "email", "phone", "linkedin", "github"]):
                 if "contact" in sec_title:
-                    matching_sections.append("## " + sec if i > 0 else sec)
-                    
+                    matching_sections.append(("## " + sec) if i > 0 else sec)
+            elif any(k in query_lower for k in ["schedul", "availab", "free", "weekend", "saturday", "sunday", "meeting", "interview"]):
+                if "schedul" in sec_title or "availab" in sec_title:
+                    matching_sections.append(("## " + sec) if i > 0 else sec)
         if matching_sections:
             return "\n\n".join(matching_sections)
-            
-        # Default to first 3 sections (Background + Skills + Contact) if no specific keywords matched
-        # sections[0] is the main title, sections[1] is Section 1 (Personal Identity), etc.
         return "\n\n## ".join(sections[:4])
     except Exception as e:
-        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra."
+        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra. I have built 48+ projects including AI systems, web apps, games, and tools."
 
 @tool
 def calculator(expression: str = "") -> str:
