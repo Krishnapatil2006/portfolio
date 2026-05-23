@@ -72,6 +72,13 @@ export interface PortfolioConfig {
   technicalSkills: { [category: string]: string[] }
   showTestimonials: boolean
   showAllRepos: boolean
+  staticStats?: {
+    totalRepos: number
+    totalStars: number
+    totalForks: number
+    followers: number
+    totalCommits: number
+  }
 }
 
 // GitHub API Response Types

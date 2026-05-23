@@ -170,6 +170,15 @@ export const portfolioConfig: PortfolioConfig = {
   // Display Settings
   showTestimonials: false,
   showAllRepos: false,
+
+  // Static fallback stats — shown instantly and used when GitHub API is rate-limited
+  staticStats: {
+    totalRepos: 48,          // Total public repos on kriss2012
+    totalStars: 12,          // Approximate total stars
+    totalForks: 5,           // Approximate total forks
+    followers: 8,            // GitHub followers
+    totalCommits: 300,       // Estimated lifetime commits
+  },
 }
 
 // Helper function to calculate years of experience

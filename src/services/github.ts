@@ -11,7 +11,21 @@ import { getCache, setCache } from '../utils/cache'
 import { portfolioConfig } from '../config/portfolio.config'
 
 const GITHUB_API_BASE = 'https://api.github.com'
-const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours — refresh daily without hammering the API
+const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours
+
+// GitHub token for 5000 req/hour + GraphQL access
+const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN as string | undefined
+
+/** Build Authorization headers if token is available */
+function authHeaders(): HeadersInit {
+  if (GITHUB_TOKEN?.trim()) {
+    return {
+      'Authorization': `Bearer ${GITHUB_TOKEN.trim()}`,
+      'Accept': 'application/vnd.github+json',
+    }
+  }
+  return { 'Accept': 'application/vnd.github+json' }
+}
 
 /**
  * GitHub API Service
@@ -44,17 +58,11 @@ const LANGUAGE_COLORS: { [key: string]: string } = {
 export async function fetchUserProfile(username: string = portfolioConfig.social.github): Promise<GitHubUser | null> {
   const cacheKey = `user_${username}`
   const cached = getCache<GitHubUser>(cacheKey)
-
-  if (cached) {
-    return cached
-  }
+  if (cached) return cached
 
   try {
-    const response = await fetch(`${GITHUB_API_BASE}/users/${username}`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user: ${response.statusText}`)
-    }
-
+    const response = await fetch(`${GITHUB_API_BASE}/users/${username}`, { headers: authHeaders() })
+    if (!response.ok) throw new Error(`Failed to fetch user: ${response.statusText}`)
     const data: GitHubUser = await response.json()
     setCache(cacheKey, data, CACHE_TTL)
     return data
@@ -74,19 +82,14 @@ export async function fetchUserRepos(
 ): Promise<GitHubRepo[]> {
   const cacheKey = `repos_${username}_${page}_${perPage}`
   const cached = getCache<GitHubRepo[]>(cacheKey)
-
-  if (cached) {
-    return cached
-  }
+  if (cached) return cached
 
   try {
     const response = await fetch(
-      `${GITHUB_API_BASE}/users/${username}/repos?page=${page}&per_page=${perPage}&sort=updated`
+      `${GITHUB_API_BASE}/users/${username}/repos?page=${page}&per_page=${perPage}&sort=updated`,
+      { headers: authHeaders() }
     )
-    if (!response.ok) {
-      throw new Error(`Failed to fetch repos: ${response.statusText}`)
-    }
-
+    if (!response.ok) throw new Error(`Failed to fetch repos: ${response.statusText}`)
     const data: GitHubRepo[] = await response.json()
     setCache(cacheKey, data, CACHE_TTL)
     return data
@@ -105,17 +108,14 @@ export async function fetchRepoLanguages(
 ): Promise<GitHubLanguages> {
   const cacheKey = `languages_${username}_${repoName}`
   const cached = getCache<GitHubLanguages>(cacheKey)
-
-  if (cached) {
-    return cached
-  }
+  if (cached) return cached
 
   try {
-    const response = await fetch(`${GITHUB_API_BASE}/repos/${username}/${repoName}/languages`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch languages: ${response.statusText}`)
-    }
-
+    const response = await fetch(
+      `${GITHUB_API_BASE}/repos/${username}/${repoName}/languages`,
+      { headers: authHeaders() }
+    )
+    if (!response.ok) throw new Error(`Failed to fetch languages: ${response.statusText}`)
     const data: GitHubLanguages = await response.json()
     setCache(cacheKey, data, CACHE_TTL)
     return data
@@ -135,25 +135,59 @@ export async function fetchUserEvents(
 ): Promise<GitHubEvent[]> {
   const cacheKey = `events_${username}_${page}`
   const cached = getCache<GitHubEvent[]>(cacheKey)
-
-  if (cached) {
-    return cached
-  }
+  if (cached) return cached
 
   try {
     const response = await fetch(
-      `${GITHUB_API_BASE}/users/${username}/events/public?page=${page}&per_page=${perPage}`
+      `${GITHUB_API_BASE}/users/${username}/events/public?page=${page}&per_page=${perPage}`,
+      { headers: authHeaders() }
     )
-    if (!response.ok) {
-      throw new Error(`Failed to fetch events: ${response.statusText}`)
-    }
-
+    if (!response.ok) throw new Error(`Failed to fetch events: ${response.statusText}`)
     const data: GitHubEvent[] = await response.json()
     setCache(cacheKey, data, CACHE_TTL)
     return data
   } catch (error) {
     console.error('Error fetching user events:', error)
     return []
+  }
+}
+
+/**
+ * Get real total commit count via GitHub GraphQL API (requires token)
+ */
+export async function getTotalCommitCount(
+  username: string = portfolioConfig.social.github,
+  year: number = new Date().getFullYear()
+): Promise<number> {
+  if (!GITHUB_TOKEN?.trim()) return 0
+  const cacheKey = `commits_${username}_${year}`
+  const cached = getCache<number>(cacheKey)
+  if (cached) return cached
+
+  const from = `${year}-01-01T00:00:00Z`
+  const to   = `${year}-12-31T23:59:59Z`
+  const query = `{
+    user(login: "${username}") {
+      contributionsCollection(from: "${from}", to: "${to}") {
+        totalCommitContributions
+        totalPullRequestContributions
+      }
+    }
+  }`
+
+  try {
+    const res = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    })
+    if (!res.ok) return 0
+    const json = await res.json()
+    const total = json?.data?.user?.contributionsCollection?.totalCommitContributions || 0
+    setCache(cacheKey, total, CACHE_TTL)
+    return total
+  } catch {
+    return 0
   }
 }
 
@@ -447,9 +481,13 @@ export async function getReplayStats(
       return eventYear === year
     })
 
-    // Calculate commit stats
+    // Calculate commit stats — use GraphQL real count if token available
     const pushEvents = yearEvents.filter(e => e.type === 'PushEvent')
-    const totalCommits = pushEvents.reduce((sum, e) => sum + (e.payload.commits?.length || 1), 0)
+    const eventCommits = pushEvents.reduce((sum, e) => sum + (e.payload.commits?.length || 1), 0)
+    // GraphQL gives real count (not limited to 90 days of events)
+    const graphqlCommits = await getTotalCommitCount(username, year)
+    const totalCommits = graphqlCommits > 0 ? graphqlCommits : eventCommits
+
 
     // Calculate monthly activity
     const monthlyCommits = new Array(12).fill(0)

@@ -3,6 +3,7 @@ import './StatsSection.css'
 import { getStats } from '../services/github'
 import { ProcessedStats } from '../types'
 import { trackSectionVisit } from '../services/achievementService'
+import { portfolioConfig } from '../config/portfolio.config'
 
 // Animated counter hook
 function useCountUp(
@@ -38,23 +39,39 @@ function useCountUp(
 }
 
 function StatsSection() {
-  const [stats, setStats] = useState<ProcessedStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Initialize immediately with static fallback — never shows 0
+  const fallback = portfolioConfig.staticStats
+  const [stats, setStats] = useState<ProcessedStats | null>({
+    totalProjects: fallback?.totalRepos ?? 48,
+    totalStars:    fallback?.totalStars  ?? 12,
+    totalForks:    fallback?.totalForks  ?? 5,
+    totalCommits:  fallback?.totalCommits ?? 300,
+    languages: [
+      { name: 'Python',     percentage: 45, color: '#3776ab' },
+      { name: 'JavaScript', percentage: 25, color: '#f7df1e' },
+      { name: 'HTML',       percentage: 15, color: '#e34c26' },
+      { name: 'CSS',        percentage: 10, color: '#1572b6' },
+      { name: 'Java',       percentage: 5,  color: '#b07219' },
+    ],
+    completionRate: 85,
+  })
+  const [loading, setLoading] = useState(false) // Don't block on API
   const [isVisible, setIsVisible] = useState(false)
 
   const sectionRef = useRef<HTMLDivElement>(null)
   const hasTrackedRef = useRef(false)
 
-  // Load GitHub stats
+  // Load GitHub stats — updates values if API succeeds
   useEffect(() => {
     const loadStats = async () => {
       try {
         const data = await getStats()
-        setStats(data)
+        if (data && data.totalProjects > 0) {
+          setStats(data)
+        }
       } catch (err) {
         console.error('Failed to load GitHub stats:', err)
-      } finally {
-        setLoading(false)
+        // Static values already displayed — no action needed
       }
     }
 
@@ -102,7 +119,7 @@ function StatsSection() {
     isVisible && !loading
   )
 
-  if (loading || !stats) {
+  if (!stats) {
     return (
       <div className="stats-section" id="stats">
         <section className="card stats-card">

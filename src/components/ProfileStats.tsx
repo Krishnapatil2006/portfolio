@@ -57,15 +57,17 @@ function extractGradientColors(
    COMPONENT
 ---------------------------- */
 function ProfileStats() {
-  const [repos, setRepos] = useState<number>(0)
-  const [followers, setFollowers] = useState<number>(0)
-  const [stars, setStars] = useState<number>(0)
+  const staticFallback = portfolioConfig.staticStats
+
+  const [repos, setRepos] = useState<number>(staticFallback?.totalRepos ?? 0)
+  const [followers, setFollowers] = useState<number>(staticFallback?.followers ?? 0)
+  const [stars, setStars] = useState<number>(staticFallback?.totalStars ?? 0)
   const [achievementsXP, setAchievementsXP] = useState<number>(0)
   const [achievementMeta, setAchievementMeta] = useState({
     unlockedCount: 0,
     totalCount: 0,
   })
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false) // false: show static stats immediately
 
   const mountedRef = useRef<boolean>(true)
 
@@ -100,23 +102,25 @@ function ProfileStats() {
 
     const loadGitHubData = async () => {
       try {
-        const profile = await fetchUserProfile()
-        const repoStats = await getStats()
+        const [profile, repoStats] = await Promise.all([
+          fetchUserProfile(),
+          getStats(),
+        ])
 
         if (!mountedRef.current) return
 
-        if (profile) {
+        // Only update if API returned real data (not 0 from rate limiting)
+        if (profile && profile.public_repos > 0) {
           setRepos(profile.public_repos)
           setFollowers(profile.followers)
         }
-
-        if (repoStats) {
-          setStars(repoStats.totalStars)
+        if (repoStats && repoStats.totalStars >= 0) {
+          // Keep static fallback if API returns 0 but we have a known real value
+          if (repoStats.totalStars > 0) setStars(repoStats.totalStars)
         }
       } catch (error) {
         console.error('Error loading GitHub data:', error)
-      } finally {
-        if (mountedRef.current) setLoading(false)
+        // Static values already shown — no action needed on error
       }
     }
 
