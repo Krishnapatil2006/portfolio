@@ -11,7 +11,7 @@ import { getCache, setCache } from '../utils/cache'
 import { portfolioConfig } from '../config/portfolio.config'
 
 const GITHUB_API_BASE = 'https://api.github.com'
-const CACHE_TTL = 0 // Disabled cache to fetch latest stats immediately
+const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours — refresh daily without hammering the API
 
 /**
  * GitHub API Service
@@ -420,12 +420,29 @@ export async function getReplayStats(
   }
 
   try {
-    const repos = await fetchUserRepos(username)
-    const events = await fetchUserEvents(username, 1, 100)
-    const user = await fetchUserProfile(username)
+    // Fetch from both accounts in parallel for complete stats
+    const SECONDARY_ACCOUNT = 'Krishnapatil2006'
+    const [repos, events, user, eventsSecondary, reposSecondary] = await Promise.all([
+      fetchUserRepos(username),
+      fetchUserEvents(username, 1, 100),
+      fetchUserProfile(username),
+      fetchUserEvents(SECONDARY_ACCOUNT, 1, 100).catch(() => [] as GitHubEvent[]),
+      fetchUserRepos(SECONDARY_ACCOUNT).catch(() => [] as GitHubRepo[]),
+    ])
+
+    // Merge events from both accounts, deduplicate by id
+    const allEventsMap = new Map<string, GitHubEvent>()
+    ;[...events, ...eventsSecondary].forEach(e => allEventsMap.set(e.id, e))
+    const allEvents = Array.from(allEventsMap.values())
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+    // Merge repos (deduplicate by name)
+    const allReposMap = new Map<string, GitHubRepo>()
+    ;[...repos, ...reposSecondary].forEach(r => allReposMap.set(r.name, r))
+    const allRepos = Array.from(allReposMap.values())
 
     // Filter events for the specified year
-    const yearEvents = events.filter(event => {
+    const yearEvents = allEvents.filter(event => {
       const eventYear = new Date(event.created_at).getFullYear()
       return eventYear === year
     })
@@ -478,15 +495,17 @@ export async function getReplayStats(
     const languageTotals: { [key: string]: number } = {}
     let totalLanguageBytes = 0
 
-    for (const repo of repos) {
-      if (!repo.fork) {
-        const languages = await fetchRepoLanguages(username, repo.name)
-        Object.entries(languages).forEach(([lang, bytes]) => {
-          languageTotals[lang] = (languageTotals[lang] || 0) + bytes
-          totalLanguageBytes += bytes
-        })
-      }
-    }
+    // Parallel language fetching — all repos at once instead of sequential
+    const nonForkRepos = allRepos.filter(r => !r.fork)
+    const languageResults = await Promise.all(
+      nonForkRepos.map(repo => fetchRepoLanguages(username, repo.name))
+    )
+    languageResults.forEach(languages => {
+      Object.entries(languages).forEach(([lang, bytes]) => {
+        languageTotals[lang] = (languageTotals[lang] || 0) + bytes
+        totalLanguageBytes += bytes
+      })
+    })
 
     const languageBreakdown = Object.entries(languageTotals)
       .map(([name, bytes]) => ({
@@ -500,15 +519,15 @@ export async function getReplayStats(
     const topLanguage = languageBreakdown[0] || { name: 'Unknown', percentage: 0, color: '#6e7681' }
 
     // Repos created in the year
-    const reposCreatedThisYear = repos.filter(repo => {
+    const reposCreatedThisYear = allRepos.filter(repo => {
       const repoYear = new Date(repo.created_at).getFullYear()
       return repoYear === year
     })
     const reposCreated = reposCreatedThisYear.length
 
     // Stars and forks gained (approximation based on current values)
-    const starsEarned = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0)
-    const forksGained = repos.reduce((sum, repo) => sum + repo.forks_count, 0)
+    const starsEarned = allRepos.reduce((sum, repo) => sum + repo.stargazers_count, 0)
+    const forksGained = allRepos.reduce((sum, repo) => sum + repo.forks_count, 0)
 
     // Top starred repo
     const sortedByStars = [...repos].sort((a, b) => b.stargazers_count - a.stargazers_count)
