@@ -1,7 +1,11 @@
 # --- CRITICAL RENDER FIX FOR CHROMA DB ---
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+try:
+    __import__('pysqlite3')
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    # Use built-in sqlite3 (default on Windows/MacOS development machines)
+    pass
 # -----------------------------------------
 
 from fastapi import FastAPI
