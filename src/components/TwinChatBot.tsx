@@ -86,7 +86,7 @@ const TwinChatBot: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     setIsTyping(true);
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://portfolio-em1d.onrender.com';
 
     try {
       const res = await fetch(`${backendUrl}/api/chat`, {
