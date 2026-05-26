@@ -404,49 +404,107 @@ INSTANT_REPLIES = {
     "hello": "Hello! I'm Krishna Patil's AI Twin. What can I help you with?",
     "yo": "Yo! What's up? Ask me anything about Krishna's work or projects!",
     "hii": "Hey! I'm Krishna's AI Twin. Ask me about my projects, skills, or schedule a meeting!",
+    "hiii": "Hey! I'm Krishna's AI Twin. Ask me about my projects, skills, or schedule a meeting!",
     "helo": "Hello! I'm Krishna Patil's AI Twin. What can I help you with?",
+    "heloo": "Hello! I'm Krishna Patil's AI Twin. What can I help you with?",
     "sup": "Hey! Ready to chat. Ask me about my skills, projects, or when we can meet!",
+    "whats up": "Hey! Ready to chat. Ask me about my skills, projects, or when we can meet!",
+    "what's up": "Hey! Ready to chat. Ask me about my skills, projects, or when we can meet!",
     "ok": "Sure! What else would you like to know?",
     "okay": "Sure! What else would you like to know?",
     "thanks": "Happy to help! Anything else you'd like to know about Krishna?",
     "thank you": "You're welcome! Feel free to ask about projects, skills, or scheduling a call!",
+    "thankyou": "You're welcome! Feel free to ask about projects, skills, or scheduling a call!",
     "bye": "Thanks for stopping by! Reach out anytime on LinkedIn or email. Goodbye!",
     "goodbye": "Thanks for visiting! Feel free to connect on LinkedIn. Goodbye!",
+    "cya": "Thanks for stopping by! Reach out anytime on LinkedIn or email. Goodbye!",
 }
+
+# Self-introduction triggers (any message that says "introduce yourself" in any form)
+INTRO_TRIGGERS = [
+    "introduce yourself", "introduction", "introduce", "tell me about yourself",
+    "tell me about you", "who are you", "who r u", "who ru", "about you",
+    "about yourself", "wat r u", "what r u", "what are you", "whos this",
+    "who is this", "who is krishna", "who are you", "describe yourself",
+    "inntroduce", "intrroduce", "inroduce", "introdue", "intrdoce",
+]
+
+INTRO_REPLY = (
+    "Hey! I'm **Krishna Chandrakant Patil** — or rather, his AI Twin 😄\n\n"
+    "I'm a 3rd-year BCA student specialising in Computational Science at G.H. Raisoni Institute of Engineering, "
+    "Jalgaon. I'm from Pachora, Maharashtra, India.\n\n"
+    "Here's a quick snapshot of who I am:\n"
+    "- 🤖 **AI & ML enthusiast** — I've built 12+ ML projects including fraud detection, medical AI, and flood prediction systems\n"
+    "- 💻 **Full-Stack Developer** — React, Node.js, Python/Flask/Django, REST APIs\n"
+    "- 🏆 **Shark Tank Winner** (1st Prize 2025 & Runner-up 2024)\n"
+    "- 🎓 **Vice President** of the Coders Club at my college\n"
+    "- 🏸 **State-level Badminton player** & avid gamer (RDR, Resident Evil, Free Fire)\n\n"
+    "I've built **48+ projects** on GitHub — from KIRITO AI (voice desktop assistant) to MediAI Pro (healthcare AI) to this very Twin Chatbot you're talking to!\n\n"
+    "Ask me about my **projects**, **skills**, **experience**, or **schedule a meeting** with me!"
+)
 
 # One-word topic triggers — fetch context immediately and skip agent tool loop
 TOPIC_KEYWORDS = {
+    # Projects (with common typos)
     "projects":   "projects",
     "project":    "projects",
     "proejcts":   "projects",
     "projcts":    "projects",
     "porjects":   "projects",
+    "projecs":    "projects",
+    "projecst":   "projects",
+    "projecta":   "projects",  # as seen in user query "best projecta"
+    "proyects":   "projects",
+    "repos":      "projects",
+    "repo":       "projects",
+    "work":       "projects",
+    "built":      "projects",
+    # Skills
     "skills":     "skills",
     "skill":      "skills",
     "skils":      "skills",
+    "sklils":     "skills",
     "tech":       "skills",
     "stack":      "skills",
+    "technologies": "skills",
+    "programming": "skills",
+    "languages":  "skills",
+    # Contact
     "contact":    "contact",
     "email":      "contact",
     "linkedin":   "contact",
     "github":     "contact",
     "links":      "contact",
     "portfolio":  "contact",
+    "reach":      "contact",
+    # Schedule
     "schedule":   "schedule",
     "meeting":    "schedule",
     "meetup":     "schedule",
     "available":  "schedule",
+    "availability": "schedule",
     "free":       "schedule",
     "saturday":   "schedule",
     "sunday":     "schedule",
+    "interview":  "schedule",
+    "call":       "schedule",
+    # Education
     "education":  "education",
     "college":    "education",
     "bca":        "education",
     "degree":     "education",
+    "study":      "education",
+    "studying":   "education",
+    "university": "education",
+    # Experience
     "experience": "experience",
     "internship": "experience",
     "intern":     "experience",
-    "work":       "experience",
+    "worked":     "experience",
+    "job":        "experience",
+    "achievement": "experience",
+    "achievements": "experience",
+    # Hobbies
     "hobbies":    "hobbies",
     "hobby":      "hobbies",
     "interests":  "hobbies",
@@ -454,17 +512,100 @@ TOPIC_KEYWORDS = {
     "badminton":  "hobbies",
     "gaming":     "hobbies",
     "anime":      "hobbies",
+    "games":      "hobbies",
+    "music":      "hobbies",
 }
 
 TOPIC_CONTEXT = {
-    "projects":   "give me full details of all my GitHub projects",
-    "skills":     "what are Krishna's technical skills and expertise",
-    "contact":    "what are Krishna's contact details, portfolio links, LinkedIn, GitHub",
-    "schedule":   "what is Krishna's availability for meetings and interviews",
-    "education":  "what is Krishna's educational background and qualifications",
-    "experience": "what is Krishna's work experience and internships",
-    "hobbies":    "what are Krishna's hobbies, interests and personal life",
+    "projects":   "List all of Krishna's GitHub projects with tech stacks and what they do",
+    "skills":     "What are Krishna's technical skills, programming languages, and expertise",
+    "contact":    "What are Krishna's contact details, portfolio links, LinkedIn, GitHub, email",
+    "schedule":   "What is Krishna's availability for meetings and interviews",
+    "education":  "What is Krishna's educational background and qualifications",
+    "experience": "What is Krishna's work experience, internships, and achievements",
+    "hobbies":    "What are Krishna's hobbies, interests, sports, and personal life",
 }
+
+# Static intelligent fallbacks per topic (used when LLM is down)
+TOPIC_STATIC_FALLBACKS = {
+    "projects": (
+        "Here are my top projects:\n"
+        "- **MediAI Pro** — Flask + ML healthcare app with symptom diagnosis, Google OAuth, Razorpay payments\n"
+        "- **KIRITO AI** — Voice-activated desktop assistant (Python + speech recognition + pywebview)\n"
+        "- **FloodGuard AI** — Real-time flood prediction & alert platform (Python + TensorFlow + Leaflet.js)\n"
+        "- **Job Recommendation System** — Resume-to-job matching using TF-IDF & cosine similarity (Flask + MongoDB + Docker)\n"
+        "- **Fake Reviews Detector** — 95% accuracy ML classifier on 100k+ reviews\n"
+        "- **Credit Card Fraud Detection** — SMOTE + XGBoost on imbalanced financial datasets\n"
+        "- **Twin AI Chatbot** — This chatbot! LangChain + Groq + RAG pipeline with Chroma DB\n"
+        "- **BashaConverter** — Multilingual NLP translation system (+40% communication efficiency)\n"
+        "...and 40+ more on GitHub: github.com/kriss2012"
+    ),
+    "skills": (
+        "My tech stack:\n"
+        "- **Languages**: Python, JavaScript/TypeScript, Java, C++\n"
+        "- **Web**: React, Node.js, Flask, Django, FastAPI, REST APIs\n"
+        "- **AI/ML**: TensorFlow, PyTorch, scikit-learn, LangChain, NLP, LLMs, Computer Vision\n"
+        "- **Databases**: PostgreSQL, MongoDB, MySQL, ChromaDB\n"
+        "- **Cloud/DevOps**: AWS, Docker, GitHub Actions, CI/CD\n"
+        "- **Other**: WebRTC, Socket.io, MQTT, RAG pipelines, Generative AI"
+    ),
+    "contact": (
+        "Here's how to reach me:\n"
+        "- 📧 Email: 202krishnapatil@gmail.com\n"
+        "- 💼 LinkedIn: linkedin.com/in/krishna-patil-33969536b\n"
+        "- 🐙 GitHub: github.com/kriss2012\n"
+        "- 🌐 Portfolio: tgkrish-portfolio.netlify.app\n"
+        "- 📱 Phone: +91 9850159631"
+    ),
+    "schedule": (
+        "I'm available every **Saturday and Sunday** for interviews, calls, and meetups!\n"
+        "- Morning: 10:00 AM – 12:00 PM IST\n"
+        "- Afternoon: 2:00 PM – 6:00 PM IST\n"
+        "- Weekdays: After 5:00 PM if needed\n"
+        "Share your name, email, preferred date & time and I'll confirm via email!"
+    ),
+    "education": (
+        "I'm a 3rd-year **BCA student** (Computational Science) at G.H. Raisoni Institute of Engineering, Jalgaon (graduating 2026).\n"
+        "I'm the **Vice President of the Coders Club** and Head of Gaming at our national-level IT event 'Pinnacle'.\n"
+        "Before this: SDSM Dandekar College (12th, Science stream + IT) and St. Kadam Vidyalaya (10th)."
+    ),
+    "experience": (
+        "- **AI & ML Intern** at iBase Electrosoft LLP (Dec 2025, 150 hours) — real-world ML workflows, supervised learning\n"
+        "- **Shark Tank Winner** — 1st Prize 2025, Runner-up 2024\n"
+        "- **Vice President**, Coders Club\n"
+        "- **Head of Gaming Dept** for 'Pinnacle' (National Level IT Event)"
+    ),
+    "hobbies": (
+        "Outside of coding:\n"
+        "- 🏸 State-level **Badminton player** — I'm on the court every weekend\n"
+        "- 🎮 Avid gamer — RDR, Resident Evil, Tomb Raider, Free Fire (6-7 years!)\n"
+        "- 🎌 Anime fan — One Piece, Naruto, Bleach\n"
+        "- 📚 Big Harry Potter nerd — read all the books!\n"
+        "- 🎵 Music: 90s classics, lofi, rock, Yo Yo Honey Singh\n"
+        "- 📺 Shows: Game of Thrones, Lord of the Rings"
+    ),
+}
+
+def _fuzzy_topic_match(clean_msg: str) -> str | None:
+    """Detect topic even in multi-word typo-heavy messages. Returns topic key or None."""
+    # Check for intro triggers first
+    for trigger in INTRO_TRIGGERS:
+        if trigger in clean_msg:
+            return "__intro__"
+    
+    # Check all words in message against TOPIC_KEYWORDS
+    words = clean_msg.split()
+    for word in words:
+        # Direct match
+        if word in TOPIC_KEYWORDS:
+            return TOPIC_KEYWORDS[word]
+        # Substring match for longer words (catches "projecta", "proejctss" etc)
+        if len(word) >= 5:
+            for kw, topic in TOPIC_KEYWORDS.items():
+                if len(kw) >= 5 and (word.startswith(kw[:4]) or kw.startswith(word[:4])):
+                    return topic
+    return None
+
 
 def fast_path_reply(msg: str):
     """Returns an instant reply for simple/short queries, or None to proceed to the full agent."""
@@ -473,24 +614,46 @@ def fast_path_reply(msg: str):
     # Exact match for greetings
     if clean in INSTANT_REPLIES:
         return INSTANT_REPLIES[clean]
+    
+    # Check for self-introduction triggers (check before topic routing)
+    for trigger in INTRO_TRIGGERS:
+        if trigger in clean:
+            return INTRO_REPLY
 
-    # Single-word or very short (<=2 words) topic queries
+    # Single-word or very short (<=3 words) topic queries
     words = clean.split()
-    if len(words) <= 2:
+    topic = None
+    if len(words) <= 3:
         for word in words:
             if word in TOPIC_KEYWORDS:
                 topic = TOPIC_KEYWORDS[word]
-                # Pre-fetch context and do a bare LLM call — no tool round-trip
-                context = resume_knowledge_base.func(TOPIC_CONTEXT[topic])
-                try:
-                    from langchain_core.messages import HumanMessage, SystemMessage
-                    resp = llm.invoke([
-                        SystemMessage(content=qa_system_prompt),
-                        HumanMessage(content=f"Context:\n{context}\n\nQuestion: {msg}"),
-                    ])
-                    return resp.content
-                except Exception:
-                    return context[:800]  # Return raw context if LLM fails
+                break
+        # If no direct hit, try fuzzy match on short messages
+        if topic is None and len(words) <= 3:
+            topic = _fuzzy_topic_match(clean)
+    
+    if topic == "__intro__":
+        return INTRO_REPLY
+    
+    if topic:
+        # Pre-fetch context — cap at 3000 chars to avoid token overflow
+        try:
+            context = resume_knowledge_base.func(TOPIC_CONTEXT[topic])
+            context = context[:3000]  # CRITICAL: prevent token overflow
+        except Exception:
+            return TOPIC_STATIC_FALLBACKS.get(topic, None)
+        
+        try:
+            from langchain_core.messages import HumanMessage, SystemMessage
+            resp = llm.invoke([
+                SystemMessage(content=qa_system_prompt),
+                HumanMessage(content=f"Context (use this to answer):\n{context}\n\nUser asked: {msg}"),
+            ])
+            return resp.content
+        except Exception:
+            # LLM failed — use smart static fallback instead of raw markdown
+            return TOPIC_STATIC_FALLBACKS.get(topic, context[:600])
+    
     return None  # Not a fast-path query, let the full agent handle it
 
 
@@ -524,8 +687,22 @@ async def chat_endpoint(req: ChatRequest):
     except Exception as e2:
         print(f"[LLM Fallback Error] {str(e2)}")
 
-    # Layer 3: Static safe fallback — chatbot will NEVER return nothing
-    return {"reply": "Hey! I'm having a tiny moment. Could you ask again, or try asking about my projects, skills, or when we can meet?"}
+    # Layer 3: Try fuzzy fast-path as last resort before total fallback
+    fuzzy_topic = _fuzzy_topic_match(req.message.strip().lower())
+    if fuzzy_topic and fuzzy_topic != "__intro__" and fuzzy_topic in TOPIC_STATIC_FALLBACKS:
+        return {"reply": TOPIC_STATIC_FALLBACKS[fuzzy_topic]}
+    if fuzzy_topic == "__intro__":
+        return {"reply": INTRO_REPLY}
+    
+    # Layer 4: Smart static fallback — chatbot will NEVER return nothing
+    return {"reply": (
+        "Hey! I'm Krishna's AI Twin. Here's what I can help you with:\n"
+        "- **Projects** — Ask about any of my 48+ GitHub projects\n"
+        "- **Skills** — Python, React, AI/ML, LangChain, and more\n"
+        "- **Schedule** — Book a meeting with me on weekends!\n"
+        "- **Background** — Education, internship, achievements\n\n"
+        "Try asking: *'What are your best projects?'* or *'Tell me about yourself'*"
+    )}
 
 if __name__ == "__main__":
     import uvicorn
