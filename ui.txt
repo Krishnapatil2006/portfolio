@@ -1,0 +1,1075 @@
+IMPORTANT: THIS IS A RESPONSIVENESS BUG-FIX TASK ONLY.
+
+DO NOT REDESIGN MY PORTFOLIO.
+
+DO NOT CHANGE MY EXISTING GAMIFIED DESIGN.
+
+DO NOT CHANGE MY COLORS, THEME, TYPOGRAPHY, BACKGROUND, ANIMATIONS, CARDS, GAME UI, NAVIGATION, CHATBOT DESIGN, OR DESKTOP DESIGN.
+
+The portfolio is already LIVE.
+
+The current problem is that on mobile devices several sections are going outside the viewport, becoming misaligned, overflowing horizontally, or getting cut off.
+
+This creates a very bad professional impression.
+
+I need you to make the EXISTING portfolio accurately responsive on mobile and tablet while preserving the exact existing visual identity.
+
+============================================================
+                    PRIMARY OBJECTIVE
+============================================================
+
+Make the existing portfolio responsive across:
+
+320px
+360px
+375px
+390px
+393px
+412px
+430px
+480px
+768px
+820px
+1024px
+1280px
+1440px
+1920px
+
+The most important widths are:
+
+320px
+375px
+390px
+412px
+430px
+
+The website MUST NEVER create unwanted horizontal scrolling.
+
+============================================================
+                ABSOLUTE DESIGN RULE
+============================================================
+
+DO NOT CREATE A NEW MOBILE DESIGN.
+
+DO NOT TURN THE PORTFOLIO INTO A BASIC MOBILE WEBSITE.
+
+The mobile version must feel like the SAME GAMIFIED PORTFOLIO.
+
+Desktop:
+
+Existing design
+
+Mobile:
+
+Same design
+        +
+Responsive adaptation
+
+NOT:
+
+Desktop design
+        ↓
+Completely different mobile design
+
+============================================================
+              FIRST INSPECT THE CSS
+============================================================
+
+Before changing anything, inspect the entire styling architecture.
+
+Look for:
+
+- fixed widths
+- fixed heights
+- min-width
+- width: 100vw
+- margin-left
+- margin-right
+- absolute positioning
+- fixed positioning
+- transforms
+- negative margins
+- large padding
+- grid columns
+- flex rows
+- overflow
+- white-space
+- long text
+- images
+- SVGs
+- canvases
+- chatbot
+- project cards
+- contribution graph
+- Code Replay
+- navigation
+- game panels
+
+Identify the actual sources of horizontal overflow.
+
+DO NOT blindly add:
+
+overflow-x: hidden;
+
+as the primary solution.
+
+That only hides the problem.
+
+Fix the elements that are actually exceeding the viewport.
+
+============================================================
+              GLOBAL RESPONSIVE FOUNDATION
+============================================================
+
+Make sure the global CSS contains an appropriate box-sizing strategy:
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+The main application wrapper must not exceed viewport width.
+
+Avoid unnecessary:
+
+width: 100vw;
+
+because scrollbar width can cause horizontal overflow.
+
+Prefer:
+
+width: 100%;
+
+where appropriate.
+
+============================================================
+                 HORIZONTAL OVERFLOW
+============================================================
+
+Find EVERY element causing horizontal overflow.
+
+Use browser DevTools to identify the element.
+
+Do not simply hide overflow globally.
+
+If an element has:
+
+width: 700px;
+
+on a 390px screen:
+
+replace with a responsive approach.
+
+Use:
+
+width: 100%;
+max-width: ...;
+
+where appropriate.
+
+============================================================
+                   CONTAINERS
+============================================================
+
+All major sections must fit within the viewport.
+
+Use a consistent responsive container.
+
+Conceptually:
+
+.container {
+    width: 100%;
+    max-width: appropriate-desktop-width;
+    margin-inline: auto;
+    padding-inline: responsive-padding;
+}
+
+On mobile:
+
+padding-inline should be approximately:
+
+16px
+
+rather than large desktop padding.
+
+Do not allow:
+
+content width + padding > viewport width.
+
+============================================================
+                     GRID
+============================================================
+
+Any multi-column project/stat layout must collapse naturally.
+
+Desktop:
+
+3 columns
+or
+2 columns
+
+Tablet:
+
+2 columns
+
+Mobile:
+
+1 column
+
+Example:
+
+grid-template-columns: repeat(3, minmax(0, 1fr));
+
+Then mobile:
+
+grid-template-columns: 1fr;
+
+IMPORTANT:
+
+Use:
+
+minmax(0, 1fr)
+
+where appropriate so long content cannot force a grid wider than the viewport.
+
+============================================================
+                      FLEX
+============================================================
+
+Find flex containers that are forcing children onto one line.
+
+Desktop:
+
+display: flex;
+flex-direction: row;
+
+Mobile:
+
+flex-direction: column;
+
+or:
+
+flex-wrap: wrap;
+
+where appropriate.
+
+Buttons should wrap rather than overflow.
+
+Navigation items should not extend outside the screen.
+
+============================================================
+                 PROJECT CARDS
+============================================================
+
+Project cards are extremely important.
+
+Make sure cards:
+
+- fit inside viewport
+- never exceed parent width
+- don't force horizontal scrolling
+- handle long project names
+- handle long descriptions
+- handle technology badges
+- handle GitHub buttons
+- handle Live Demo buttons
+- handle project images
+
+Use:
+
+width: 100%;
+max-width: 100%;
+min-width: 0;
+
+where appropriate.
+
+Long text must wrap.
+
+Do not allow:
+
+white-space: nowrap;
+
+to cause overflow unless specifically required.
+
+For project titles:
+
+overflow-wrap: anywhere;
+
+or an appropriate word-breaking strategy.
+
+Technology badges should wrap.
+
+Buttons should wrap or stack.
+
+============================================================
+               FEATURED PROJECTS
+============================================================
+
+The Featured Projects section must remain visually similar to desktop.
+
+On mobile:
+
+one project card per row.
+
+Do NOT preserve a wide horizontal desktop carousel if it causes the page itself to overflow.
+
+If the existing design intentionally uses horizontal project scrolling:
+
+make ONLY that component horizontally scrollable inside its own container.
+
+The entire webpage must not scroll horizontally.
+
+Correct:
+
+Page
+│
+├── normal vertical scrolling
+│
+└── Project carousel
+      ← internal horizontal scroll →
+
+Incorrect:
+
+Entire page
+←────────────────────→
+
+============================================================
+                  CODE REPLAY
+============================================================
+
+The Code Replay section must be responsive.
+
+Check:
+
+- timeline
+- commits
+- repository names
+- dates
+- code blocks
+- graphs
+- controls
+- year selector
+
+The screenshot currently shows a large desktop-style panel.
+
+On mobile:
+
+The panel must fit the viewport.
+
+Do not allow fixed-width content to extend outside.
+
+If a timeline needs horizontal scrolling, constrain it to the Code Replay component.
+
+============================================================
+              CONTRIBUTION GRAPH
+============================================================
+
+The contribution visualization must be responsive.
+
+Do NOT allow the entire contribution graph to make the webpage wider.
+
+On mobile, use one of:
+
+1. Responsive scaling
+2. Compact layout
+3. Internal horizontal scrolling
+
+The preferred approach is to keep the contribution component inside its own boundary.
+
+Example:
+
+.contribution-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+The scrollbar must belong to the contribution component, NOT the whole webpage.
+
+Do not make tiny unreadable contribution cells if a better responsive solution exists.
+
+============================================================
+                 GITHUB STATS
+============================================================
+
+GitHub statistic cards must fit mobile.
+
+Desktop:
+
+multiple cards in a row.
+
+Mobile:
+
+1 or 2 cards per row depending on available width.
+
+Never:
+
+5 cards squeezed into 390px.
+
+Use:
+
+grid-template-columns:
+repeat(auto-fit, minmax(...))
+
+or explicit mobile breakpoints.
+
+Numbers must remain centered.
+
+Labels must wrap.
+
+============================================================
+                    NAVIGATION
+============================================================
+
+Fix the navigation for mobile.
+
+It must not:
+
+- overflow
+- clip
+- overlap
+- push content sideways
+- create horizontal page scrolling
+
+If there is an existing mobile menu:
+
+FIX IT.
+
+Do not redesign it.
+
+If the current navigation is desktop-oriented:
+
+adapt it into a compact version while keeping the same visual style.
+
+============================================================
+                    HERO
+============================================================
+
+The Hero section must fit mobile.
+
+Check:
+
+- title
+- subtitle
+- buttons
+- avatar
+- game elements
+- decorative elements
+
+Large text must scale appropriately.
+
+Do not use a desktop-only fixed font size that causes overflow.
+
+Use responsive typography.
+
+For example:
+
+clamp()
+
+where appropriate.
+
+Do NOT make the hero tiny.
+
+It should remain visually impressive.
+
+============================================================
+                 CHATBOT
+============================================================
+
+The chatbot is especially important.
+
+The chatbot MUST NOT:
+
+- extend outside viewport
+- cover the entire screen unnecessarily
+- overflow horizontally
+- become impossible to close
+- overlap navigation
+- place its input outside the screen
+
+On mobile:
+
+Chatbot width should be:
+
+calc(100vw - appropriate side margins)
+
+or:
+
+width: min(..., calc(100vw - 32px));
+
+Maximum width should still be respected.
+
+The chatbot should stay inside the viewport.
+
+The input field must shrink correctly.
+
+Send button must remain accessible.
+
+Messages must wrap.
+
+Long URLs/text must wrap.
+
+The chatbot's existing visual style MUST remain unchanged.
+
+============================================================
+                CHATBOT POSITION
+============================================================
+
+Check:
+
+position: fixed;
+
+right:
+bottom:
+
+and any transforms.
+
+A desktop rule such as:
+
+right: 30px;
+width: 420px;
+
+may overflow on a 320px screen.
+
+Use responsive values.
+
+For example conceptually:
+
+Desktop:
+right: 24px;
+width: 400px;
+
+Mobile:
+left: 16px;
+right: 16px;
+width: auto;
+
+Do not literally copy this if the current design requires another solution.
+
+============================================================
+                 MODALS / POPUPS
+============================================================
+
+Every modal must fit within mobile viewport.
+
+Check:
+
+- project details
+- chatbot
+- achievements
+- GitHub information
+- image previews
+- game dialogs
+
+No modal should have:
+
+width: 800px;
+
+without a mobile constraint.
+
+Use:
+
+max-width: calc(100vw - 32px);
+
+and:
+
+max-height: calc(100vh - 32px);
+
+where appropriate.
+
+Modal content should scroll internally if necessary.
+
+The body should not become horizontally scrollable.
+
+============================================================
+                    IMAGES
+============================================================
+
+All portfolio images must be responsive.
+
+Check:
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+But do NOT blindly apply this to every image if some game graphics require specific sizing.
+
+For decorative/game elements:
+
+ensure they cannot force the page width.
+
+Use:
+
+max-width: 100%;
+
+where appropriate.
+
+============================================================
+                      SVG
+============================================================
+
+Check SVG elements.
+
+Large SVGs can cause overflow.
+
+Make sure:
+
+width: 100%;
+max-width: 100%;
+
+where appropriate.
+
+Do not distort aspect ratio.
+
+============================================================
+                 LONG TEXT
+============================================================
+
+Find long strings that can cause overflow:
+
+repository names
+URLs
+commit messages
+project names
+email addresses
+GitHub usernames
+technology names
+
+Use appropriate:
+
+overflow-wrap
+word-break
+text-overflow
+
+Do NOT use aggressive word breaking everywhere because it damages readability.
+
+============================================================
+                  TABLES
+============================================================
+
+If any table exists:
+
+wrap it inside a responsive container.
+
+Example:
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+The table may scroll internally.
+
+The entire webpage must not.
+
+============================================================
+               DESKTOP PRESERVATION
+============================================================
+
+IMPORTANT:
+
+Do NOT break desktop while fixing mobile.
+
+After every responsive change verify:
+
+1280px
+1440px
+1920px
+
+The desktop design must remain visually the same.
+
+The existing desktop layout is already accepted.
+
+============================================================
+              RESPONSIVE BREAKPOINTS
+============================================================
+
+Use sensible breakpoints.
+
+For example:
+
+<= 480px
+mobile
+
+481px–768px
+large mobile/small tablet
+
+769px–1024px
+tablet
+
+>1024px
+desktop
+
+BUT:
+
+Do not blindly introduce these exact breakpoints if the current CSS architecture already has a better system.
+
+Reuse the existing breakpoint system where possible.
+
+============================================================
+                 MOBILE SPACING
+============================================================
+
+Reduce excessive desktop spacing on small screens.
+
+Typical mobile spacing:
+
+12px
+16px
+20px
+24px
+
+Do not allow:
+
+80px
+100px
+120px
+
+side margins to remain on a 320px screen unless specifically required by the design.
+
+Preserve the visual style while making spacing proportional.
+
+============================================================
+                 RESPONSIVE TYPOGRAPHY
+============================================================
+
+Check all:
+
+h1
+h2
+h3
+p
+buttons
+labels
+badges
+
+Do not allow headings to extend outside the screen.
+
+Use:
+
+clamp()
+
+or responsive media queries.
+
+Example concept:
+
+font-size: clamp(
+    minimum,
+    responsive,
+    maximum
+);
+
+Keep the typography visually consistent with the existing design.
+
+============================================================
+               FIX ABSOLUTE ELEMENTS
+============================================================
+
+The gamified portfolio may contain decorative absolute-positioned elements.
+
+These are common causes of mobile overflow.
+
+Inspect every:
+
+position: absolute;
+
+element.
+
+Make sure decorative elements:
+
+- remain inside the visual area
+- don't force layout width
+- don't cover text
+- don't create horizontal scroll
+
+If an element is purely decorative:
+
+it must not determine page width.
+
+============================================================
+               FIX TRANSFORMS
+============================================================
+
+Inspect:
+
+transform: translateX(...)
+transform: scale(...)
+left:
+right:
+
+Large transforms can push elements outside viewport.
+
+Keep the visual effect but make it responsive.
+
+============================================================
+             BODY OVERFLOW DEBUGGING
+============================================================
+
+During development, temporarily identify the element causing overflow.
+
+For example, inspect elements whose:
+
+scrollWidth > clientWidth
+
+or whose bounding rectangle extends beyond:
+
+window.innerWidth.
+
+Find the REAL culprit.
+
+Do not simply add:
+
+body {
+    overflow-x: hidden;
+}
+
+and declare the problem solved.
+
+You may use overflow-x hidden as a final defensive measure if appropriate, BUT ONLY AFTER fixing the actual overflowing components.
+
+============================================================
+                 MOBILE TEST MATRIX
+============================================================
+
+Test the actual website at:
+
+320 × 800
+
+360 × 800
+
+375 × 812
+
+390 × 844
+
+393 × 852
+
+412 × 915
+
+430 × 932
+
+480 × 900
+
+768 × 1024
+
+820 × 1180
+
+1024 × 768
+
+1280 × 800
+
+1440 × 900
+
+1920 × 1080
+
+============================================================
+                TEST EVERY SECTION
+============================================================
+
+Check:
+
+[ ] Header
+[ ] Navigation
+[ ] Hero
+[ ] About
+[ ] Skills
+[ ] Featured Projects
+[ ] All Projects
+[ ] Project cards
+[ ] Project details
+[ ] GitHub profile
+[ ] GitHub statistics
+[ ] Contributions
+[ ] Code Replay
+[ ] Recent Activity
+[ ] Achievements
+[ ] Experience
+[ ] Resume
+[ ] Contact
+[ ] Footer
+[ ] AI Twin
+[ ] Modals
+[ ] Buttons
+[ ] Images
+[ ] Forms
+
+============================================================
+              MOBILE INTERACTION
+============================================================
+
+Test touch interaction.
+
+Buttons should be large enough to tap.
+
+Avoid hover-only functionality.
+
+Do not require a mouse.
+
+Dropdowns must work.
+
+Chatbot must work.
+
+Project cards must work.
+
+Modals must open and close.
+
+Navigation must work.
+
+============================================================
+              PERFORMANCE
+============================================================
+
+Do not add large libraries simply to fix responsiveness.
+
+Use the existing CSS/framework.
+
+Avoid unnecessary JavaScript resize listeners.
+
+Prefer CSS media queries.
+
+Use CSS Grid/Flexbox.
+
+============================================================
+               ACCESSIBILITY
+============================================================
+
+Responsive changes must preserve:
+
+- keyboard navigation
+- focus states
+- readable text
+- accessible buttons
+- semantic structure
+
+============================================================
+               FINAL OVERFLOW TEST
+============================================================
+
+Before completion, run a programmatic/browser check.
+
+For each viewport:
+
+check:
+
+document.documentElement.scrollWidth
+document.documentElement.clientWidth
+
+They should be equal or effectively equal when no intentional internal scroller exists.
+
+If:
+
+scrollWidth > clientWidth
+
+identify the element causing it.
+
+Do NOT finish until all unintended overflow is fixed.
+
+============================================================
+               IMPORTANT DISTINCTION
+============================================================
+
+INTENTIONAL INTERNAL SCROLL:
+
+Contribution calendar
+Project carousel
+Code timeline if necessary
+
+is acceptable.
+
+UNINTENTIONAL PAGE SCROLL:
+
+Entire website
+←──────────────→
+
+is NOT acceptable.
+
+============================================================
+             FINAL VISUAL CHECK
+============================================================
+
+Compare desktop and mobile.
+
+The mobile version should look like:
+
+THE SAME GAMIFIED KRISHNA PATIL PORTFOLIO
+
+but:
+
+- properly fitted
+- aligned
+- readable
+- touch friendly
+- responsive
+- professional
+
+NOT like a redesigned mobile template.
+
+============================================================
+             FINAL ACCEPTANCE CRITERIA
+============================================================
+
+The task is complete only when:
+
+[✓] No unintended horizontal page scrolling
+[✓] No elements extend outside viewport
+[✓] No cards are cut off
+[✓] No text is clipped
+[✓] No buttons are outside viewport
+[✓] Navigation fits mobile
+[✓] Chatbot fits mobile
+[✓] Modals fit mobile
+[✓] Projects stack correctly
+[✓] GitHub stats fit correctly
+[✓] Contribution section fits correctly
+[✓] Code Replay fits correctly
+[✓] Images are responsive
+[✓] Long repository names wrap
+[✓] Long URLs wrap
+[✓] Desktop remains unchanged
+[✓] Tablet works
+[✓] 320px mobile works
+[✓] 375px mobile works
+[✓] 390px mobile works
+[✓] 412px mobile works
+[✓] 430px mobile works
+[✓] No major console errors
+
+============================================================
+                  FINAL COMMAND
+============================================================
+
+DO NOT REDESIGN.
+
+DO NOT CHANGE THE GAMIFIED IDENTITY.
+
+DO NOT MAKE A NEW MOBILE PORTFOLIO.
+
+FIX THE RESPONSIVENESS OF THE EXISTING PORTFOLIO.
+
+The result must be:
+
+SAME DESIGN
++
+SAME GAME EXPERIENCE
++
+SAME BRAND
++
+PROPER RESPONSIVE LAYOUT
++
+ZERO UNINTENDED MOBILE OVERFLOW
+
+The mobile website should look polished enough that I can confidently show it to recruiters, judges, clients, and visitors.
+
+PRESERVE THE DESIGN.
+FIX THE RESPONSIVENESS.
+DO NOT REDESIGN.
