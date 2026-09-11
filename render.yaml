@@ -1,0 +1,66 @@
+# ==============================================================================
+# Render Blueprint Configuration — Krishna Patil Portfolio Backend
+# Optimized for Render Free Tier (Fast startup, low memory, zero idle cost)
+# ==============================================================================
+
+services:
+  - type: web
+    name: krishna-portfolio-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+      - key: ENVIRONMENT
+        value: production
+
+      # GitHub API Configuration
+      - key: GITHUB_USERNAME
+        value: kriss2012
+
+      # GitHub Personal Access Token (PAT) for higher rate limits (5,000 req/hr)
+      # Set in Render Dashboard -> Environment
+      - key: GITHUB_TOKEN
+        sync: false
+
+      # AI Twin LLM Keys (Groq free tier recommended, or Gemini)
+      # Set in Render Dashboard -> Environment
+      - key: GROQ_API_KEY
+        sync: false
+
+      - key: GEMINI_API_KEY
+        sync: false
+
+      - key: AI_MODEL
+        value: llama-3.1-8b-instant
+
+      # CORS Configuration (set to your frontend domain in production, or * for open)
+      - key: CORS_ORIGIN
+        value: "*"
+
+      # Cache TTLs in seconds (Tuned specifically for Free Tier request economy)
+      - key: CACHE_TTL_PROFILE
+        value: "21600" # 6 hours
+
+      - key: CACHE_TTL_REPOSITORIES
+        value: "3600"  # 1 hour
+
+      - key: CACHE_TTL_CONTRIBUTIONS
+        value: "7200"  # 2 hours
+
+      - key: CACHE_TTL_ACTIVITY
+        value: "600"   # 10 minutes
+
+      - key: CACHE_TTL_COMMITS
+        value: "600"   # 10 minutes
+
+      # Rate Limiting for Chatbot
+      - key: CHAT_RATE_LIMIT_PER_MINUTE
+        value: "20"

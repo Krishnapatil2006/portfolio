@@ -7,9 +7,9 @@ export interface PersonalInfo {
   email: string
   phone?: string
   birthday?: string
-  avatar?: string // Optional: will use GitHub avatar if not provided
-  banner?: string // Optional: custom banner image
-  resumeUrl?: string // Optional: path to resume PDF
+  avatar?: string
+  banner?: string
+  resumeUrl?: string
 }
 
 export interface SocialLinks {
@@ -17,12 +17,16 @@ export interface SocialLinks {
   linkedin?: string
   twitter?: string
   website?: string
+  youtube?: string
+  instagram?: string
 }
 
 export interface FeaturedProject {
   repo: string
   demoUrl?: string
   featured?: boolean
+  customTitle?: string
+  customDescription?: string
 }
 
 export interface Achievement {
@@ -30,10 +34,11 @@ export interface Achievement {
   title: string
   description: string
   icon: string
-  logo?: string // Optional: path to badge/logo image
+  logo?: string
   year?: number
   unlocked: boolean
-  rarity?: 'common' | 'rare' | 'epic' | 'legendary' // Achievement rarity level
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary'
+  badge?: string
 }
 
 export interface Hobby {
@@ -41,7 +46,7 @@ export interface Hobby {
   title: string
   description: string
   icon: string
-  status?: string // Optional: "Currently Active" or other status text
+  status?: string
 }
 
 export interface VisitorAchievement {
@@ -50,16 +55,26 @@ export interface VisitorAchievement {
   description: string
   icon: string
   unlocked: boolean
-  unlockedAt?: number // timestamp
+  unlockedAt?: number
   trigger: 'auto' | 'scroll' | 'click' | 'time' | 'easter-egg'
-  triggerCondition?: string // specific condition for trigger
+  triggerCondition?: string
   rarity?: 'common' | 'rare' | 'epic' | 'legendary'
-  xp?: number // XP reward for unlocking
+  xp?: number
 }
 
 export interface WorkStatus {
   status: 'available' | 'employed' | 'away' | 'busy'
   message: string
+}
+
+export interface CareerMilestone {
+  year: string
+  title: string
+  role?: string
+  organization?: string
+  description: string
+  highlights: string[]
+  icon: string
 }
 
 export interface PortfolioConfig {
@@ -68,6 +83,7 @@ export interface PortfolioConfig {
   workStatus: WorkStatus
   featuredProjects: FeaturedProject[]
   achievements: Achievement[]
+  journey: CareerMilestone[]
   hobbies: Hobby[]
   technicalSkills: { [category: string]: string[] }
   showTestimonials: boolean
@@ -81,7 +97,7 @@ export interface PortfolioConfig {
   }
 }
 
-// GitHub API Response Types
+// GitHub API Models
 export interface GitHubUser {
   login: string
   avatar_url: string
@@ -94,6 +110,12 @@ export interface GitHubUser {
   following: number
   created_at: string
   updated_at: string
+  html_url: string
+  blog?: string
+  company?: string | null
+  account_age_years?: number
+  isCached?: boolean
+  lastUpdated?: string
 }
 
 export interface GitHubRepo {
@@ -115,36 +137,131 @@ export interface GitHubRepo {
   topics: string[]
 }
 
-export interface GitHubLanguages {
-  [key: string]: number
+// Live Processed Types for UI
+export interface LiveProject {
+  id: number
+  name: string
+  title: string
+  description: string
+  language: string
+  languageColor: string
+  topics: string[]
+  stars: number
+  forks: number
+  openIssues: number
+  size: number
+  isFork: boolean
+  htmlUrl: string
+  homepage: string | null
+  updatedAt: string
+  updatedAtRelative: string
+  createdAt: string
+  category: string
+  image: string
+  isFeatured?: boolean
 }
 
-export interface GitHubEvent {
+export interface ContributionDay {
+  contributionCount: number
+  date: string
+  weekday: number
+  color: string
+}
+
+export interface ContributionWeek {
+  contributionDays: ContributionDay[]
+}
+
+export interface ContributionData {
+  year: number
+  totalContributions: number
+  totalCommits: number
+  totalPullRequests: number
+  totalIssues: number
+  totalRepositories: number
+  totalReviews: number
+  activeDays: number
+  longestStreak: number
+  currentStreak: number
+  weeks: ContributionWeek[]
+  availableYears: number[]
+  isCached?: boolean
+  lastUpdated?: string
+}
+
+export interface LanguageDistribution {
+  name: string
+  bytes: number
+  percentage: number
+  reposCount: number
+  color: string
+}
+
+export interface LanguageAnalytics {
+  languages: LanguageDistribution[]
+  totalLanguagesCount: number
+  totalReposAnalyzed: number
+  lastUpdated?: string
+}
+
+export interface CommitItem {
+  sha: string
+  fullSha: string
+  message: string
+  repository: string
+  repositoryUrl: string
+  date: string
+  dateRelative: string
+  commitUrl: string
+  author: string
+}
+
+export interface ActivityItem {
   id: string
   type: string
-  actor: {
-    login: string
-    avatar_url: string
-  }
-  repo: {
-    name: string
-    url: string
-  }
-  payload: any
-  created_at: string
+  badge: string
+  icon: string
+  repo: string
+  repoUrl: string
+  description: string
+  createdAt: string
+  timeAgo: string
+  commits?: Array<{ sha: string; message: string }>
 }
 
-export interface GitHubContributorStats {
-  total: number
-  weeks: Array<{
-    w: number
-    a: number
-    d: number
-    c: number
-  }>
+export interface GitHubStatsSummary {
+  totalRepos: number
+  totalStars: number
+  totalForks: number
+  totalCommits: number
+  totalContributions: number
+  totalPullRequests: number
+  totalIssues: number
+  totalReviews: number
+  followers: number
+  following: number
+  activeDays: number
+  longestStreak: number
+  currentStreak: number
 }
 
-// Processed/Computed Types
+export interface GitHubOverviewPayload {
+  profile: GitHubUser
+  statistics: GitHubStatsSummary
+  contributions: ContributionData
+  languages: LanguageAnalytics
+  repositories: LiveProject[]
+  commits: CommitItem[]
+  activity: ActivityItem[]
+  meta: {
+    username: string
+    isCached: boolean
+    lastSynchronized: string
+    serverTime: string
+  }
+}
+
+// Backwards compatibility types
 export interface ProcessedProject {
   id: number
   title: string
@@ -158,6 +275,32 @@ export interface ProcessedProject {
   demo: string | null
   isFeatured: boolean
   lastUpdated: string
+  repoName?: string
+  problem?: string
+  solution?: string
+  features?: string[]
+  impact?: string
+  status?: string
+}
+
+export interface ProjectDetailData {
+  id: string | number
+  repo: string
+  title: string
+  category?: string
+  description: string
+  problem?: string
+  solution?: string
+  features?: string[]
+  tech: string[]
+  stars: number
+  forks: number
+  github: string
+  demo?: string | null
+  impact?: string
+  status?: string
+  readme?: string
+  image?: string
 }
 
 export interface ProcessedStats {
@@ -182,14 +325,6 @@ export interface ProcessedActivity {
   icon: string
 }
 
-// Cache Types
-export interface CachedData<T> {
-  data: T
-  timestamp: number
-  expiresAt: number
-}
-
-// GitHub Replay Types
 export interface GitHubReplayStats {
   year: number
   totalCommits: number

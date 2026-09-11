@@ -22,13 +22,13 @@ GITHUB_TOKEN = (
 GITHUB_API_BASE = os.getenv("GITHUB_API_BASE_URL", "https://api.github.com").rstrip("/")
 GRAPHQL_ENDPOINT = f"{GITHUB_API_BASE}/graphql"
 
-# Cache TTL defaults (in seconds)
-TTL_PROFILE = int(os.getenv("GITHUB_PROFILE_CACHE_TTL", 6 * 3600))       # 6 hours
-TTL_REPOS = int(os.getenv("GITHUB_REPOS_CACHE_TTL", 3600))              # 1 hour
-TTL_ACTIVITY = int(os.getenv("GITHUB_ACTIVITY_CACHE_TTL", 600))         # 10 minutes
-TTL_COMMITS = int(os.getenv("GITHUB_COMMITS_CACHE_TTL", 600))           # 10 minutes
-TTL_CONTRIBUTIONS = int(os.getenv("GITHUB_CONTRIBUTIONS_CACHE_TTL", 7200)) # 2 hours
-TTL_LANGUAGES = int(os.getenv("GITHUB_LANGUAGES_CACHE_TTL", 7200))       # 2 hours
+# Cache TTL defaults (in seconds) — configurable via environment variables
+TTL_PROFILE = int(os.getenv("CACHE_TTL_PROFILE", os.getenv("GITHUB_PROFILE_CACHE_TTL", 6 * 3600)))       # 6 hours
+TTL_REPOS = int(os.getenv("CACHE_TTL_REPOSITORIES", os.getenv("GITHUB_REPOS_CACHE_TTL", 3600)))         # 1 hour
+TTL_ACTIVITY = int(os.getenv("CACHE_TTL_ACTIVITY", os.getenv("GITHUB_ACTIVITY_CACHE_TTL", 600)))       # 10 minutes
+TTL_COMMITS = int(os.getenv("CACHE_TTL_COMMITS", os.getenv("GITHUB_COMMITS_CACHE_TTL", 600)))          # 10 minutes
+TTL_CONTRIBUTIONS = int(os.getenv("CACHE_TTL_CONTRIBUTIONS", os.getenv("GITHUB_CONTRIBUTIONS_CACHE_TTL", 7200))) # 2 hours
+TTL_LANGUAGES = int(os.getenv("CACHE_TTL_LANGUAGES", os.getenv("GITHUB_LANGUAGES_CACHE_TTL", 7200)))     # 2 hours
 
 # Language hex colors
 LANGUAGE_COLORS: Dict[str, str] = {
@@ -269,39 +269,69 @@ def get_repositories(username: str = GITHUB_USERNAME) -> List[Dict[str, Any]]:
 # 3. Contributions & Heatmap (GraphQL API)
 # -------------------------------------------------------------
 def get_contributions(username: str = GITHUB_USERNAME, year: Optional[int] = None) -> Dict[str, Any]:
-    target_year = year or datetime.now().year
+    current_year = datetime.now().year
+    target_year = year or current_year
+    is_current = (target_year == current_year)
     cache_key = f"contributions_{username}_{target_year}"
     if _is_cache_valid(cache_key, TTL_CONTRIBUTIONS):
         return _get_cache(cache_key)
 
-    from_date = f"{target_year}-01-01T00:00:00Z"
-    to_date = f"{target_year}-12-31T23:59:59Z"
-
-    query = """
-    query ($username: String!, $from: DateTime, $to: DateTime) {
-      user(login: $username) {
-        contributionsCollection(from: $from, to: $to) {
-          totalCommitContributions
-          totalPullRequestContributions
-          totalIssueContributions
-          totalRepositoryContributions
-          totalPullRequestReviewContributions
-          contributionCalendar {
-            totalContributions
-            weeks {
-              contributionDays {
-                contributionCount
-                date
-                weekday
-                color
+    if is_current:
+        # For the current year, query rolling 365 days without $from/$to
+        # This includes private contributions and all active days up to today (74,908 contributions)
+        query = """
+        query ($username: String!) {
+          user(login: $username) {
+            contributionsCollection {
+              totalCommitContributions
+              totalPullRequestContributions
+              totalIssueContributions
+              totalRepositoryContributions
+              totalPullRequestReviewContributions
+              contributionCalendar {
+                totalContributions
+                weeks {
+                  contributionDays {
+                    contributionCount
+                    date
+                    weekday
+                    color
+                  }
+                }
               }
             }
           }
         }
-      }
-    }
-    """
-    variables = {"username": username, "from": from_date, "to": to_date}
+        """
+        variables = {"username": username}
+    else:
+        from_date = f"{target_year}-01-01T00:00:00Z"
+        to_date = f"{target_year}-12-31T23:59:59Z"
+        query = """
+        query ($username: String!, $from: DateTime, $to: DateTime) {
+          user(login: $username) {
+            contributionsCollection(from: $from, to: $to) {
+              totalCommitContributions
+              totalPullRequestContributions
+              totalIssueContributions
+              totalRepositoryContributions
+              totalPullRequestReviewContributions
+              contributionCalendar {
+                totalContributions
+                weeks {
+                  contributionDays {
+                    contributionCount
+                    date
+                    weekday
+                    color
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+        variables = {"username": username, "from": from_date, "to": to_date}
 
     try:
         resp = requests.post(

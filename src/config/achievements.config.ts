@@ -210,7 +210,7 @@ export const visitorAchievements: VisitorAchievement[] = [
     trigger: 'click',
     triggerCondition: 'wallet-open',
     rarity: 'rare',
-    xp: 50,
+    xp: 40,
   },
   {
     id: 'profile-completionist',

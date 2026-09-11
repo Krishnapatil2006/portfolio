@@ -1,661 +1,215 @@
-# 🎮 Steam-Inspired Portfolio
+# Krishna Patil — Live Data-Driven Portfolio & API
 
-A stunning, interactive portfolio website inspired by Steam's profile design, built with React, TypeScript, and Vite. Features a cosmic theme, smooth animations, and dynamic GitHub integration.
+A high-performance developer portfolio and API for **Krishna Chandrakant Patil** ([@kriss2012](https://github.com/kriss2012)). Built with **React 19, TypeScript, Vite, and a production-grade FastAPI backend**, optimized specifically for **Render Free Tier**.
 
-![Portfolio Preview](https://img.shields.io/badge/Status-Live-success?style=for-the-badge)
-![React](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=for-the-badge&logo=typescript)
-![Vite](https://img.shields.io/badge/Vite-6.0-646cff?style=for-the-badge&logo=vite)
-
-## 🆕 Recent Updates
-
-### November 3, 2025
-- **📊 GitHub Replay**: Year-in-code visualization inspired by Spotify Wrapped and Steam Rewind
-  - 6-slide interactive carousel showcasing annual GitHub statistics
-  - Slide 1: Year Overview (commits, active month, longest streak, days coded)
-  - Slide 2: Language Mastery (top language with percentage breakdown and visual bars)
-  - Slide 3: Impact Metrics (stars earned, forks gained, repos created, top starred repo)
-  - Slide 4: Productivity Patterns (most productive day, peak coding hour, night owl/weekend warrior badges)
-  - Slide 5: Collaboration Stats (PRs created/merged, issues closed, top collaborated repo)
-  - Slide 6: Growth Story (follower/repo growth, contribution heatmap)
-  - Year selector to view stats from current year or previous years
-  - Smooth 150ms slide transitions with visual feedback
-  - Steam-inspired styling with gradient backgrounds and hover effects
-- **🔧 Component Architecture Refactor**: Split Showcases into independent components
-  - Separated into FeaturedProjects, AchievementsShowcase, TechnicalSkills, and PersonalHobbies
-  - Enables flexible section ordering for optimal portfolio flow
-  - Current order: Profile → Projects → GitHub Replay → Achievements → Skills → Resume → Hobbies
-  - Each component maintains its own tracking and achievement functionality
-- **🎨 Layout & Styling Improvements**:
-  - Fixed section highlight glow to display on all 4 sides (top, right, bottom, left)
-  - Resolved width constraint issues with contribution heatmap
-  - Optimized carousel dimensions to prevent layout shifts
-  - Consistent icon sizing across achievements and hobbies (60px × 60px)
-
-### October 14, 2025
-- **🐛 Achievement System Fixes**: Fixed duplicate achievement triggering
-  - Added race condition guard to prevent concurrent achievement unlocks
-  - Implemented unique toast IDs to prevent React key collisions
-  - Each achievement now triggers exactly once as intended
-  - Eliminated duplicate toast notifications appearing simultaneously
-  - Improved IntersectionObserver threshold (30% → 10%) for better section detection
-
-### October 13, 2025
-- **🏆 Achievement XP Integration**: Achievements now contribute to developer level
-  - Unlocking achievements adds XP to your level progress bar (10-200 XP per achievement)
-  - Real-time XP bar updates when achievements unlock
-  - New "Achievements" stat badge showing unlock count and total XP earned
-  - Achievement XP fully integrated into level calculation system
-  - Up to 1,000+ bonus XP available from all 18 achievements
-- **📝 Documentation Updates**: Enhanced portfolio documentation
-  - Updated Info Modal with achievement XP information
-  - Added translation reporting feature with GitHub issue templates
-  - Improved example calculations to include achievement XP
-
-### October 12, 2025
-- **🌐 Multi-Language System**: Added comprehensive language switching feature
-  - 6 languages available: English, Sarcasm, Binary, Emoji Only, Lorem Ipsum, and Young Stunnah (Filipino Gen Z slang)
-  - Dropdown menu in header with instant language switching
-  - LocalStorage persistence - language preference saved across sessions
-  - All UI text translates dynamically: headers, navigation, card titles, buttons, stats
-  - Satirical language options for entertainment:
-    - **Sarcasm**: "Code Dumps", "Pity Stars", "Things I Googled Once", "ZYON'S HUMBLE PORTFOLIO"
-    - **Binary**: All text converted to binary code
-    - **Emoji Only**: Pure emoji representations (👤 💼 📧 🎯)
-    - **Lorem Ipsum**: Classic placeholder Latin text
-    - **Young Stunnah**: Filipino Gen Z slang ("Petmalu Profile", "Bet na Bet Projects", "Flex Wall", "Dev Lodi")
-  - Translations include: navigation links, card headers, button text, loading states, and more
-- **🎨 Header Improvements**: Two-tier Steam-style header layout
-  - Top bar: Info button, Achievement badge, User dropdown with language selection
-  - Main header: Logo with translated title, navigation links
-  - User dropdown menu with Steam-like styling (account details, wallet, language submenu, sign out)
-  - Language submenu appears on hover with smooth transitions
-  - Translation problem reporting via GitHub issues
-- **ℹ️ Info Modal**: Behind-the-scenes portfolio information
-  - Explains XP system, level tiers, achievement mechanics, and hidden features
-  - Tabbed interface: Level Tiers, Achievements, XP Sources, Notifications
-  - Unified styling with Achievement Modal for consistency
-
-### October 10, 2025
-- **🏆 Visitor Achievement System**: Added Steam-style achievement system with 18 achievements
-  - Real-time toast notifications when achievements are unlocked
-  - Achievement modal with filters (all/unlocked/locked) and progress tracking
-  - 4 rarity tiers: Common, Rare, Epic, Legendary
-  - LocalStorage persistence across sessions
-  - Multiple triggers: exploration, engagement, easter eggs (Konami code!)
-  - Achievement counter badge in header with pulse animation
-- **🔔 Steam Notification System**: Satirical Steam-style friend notifications
-  - Appears in bottom-right corner every 5-12 seconds
-  - 20+ witty notifications from tech celebrities and real friends
-  - Notifications include: "Bill Gates is now online", "Elon Musk is playing Twitter Takeover Simulator", "Roaring Kitty invited you to trade GameStop shares", and more
-  - Click to dismiss or auto-dismiss after 6 seconds
-  - Color-coded borders by notification type (friend online, playing, invite, achievement, trade, message)
-  - Full Cosmic theme support
-- **🎨 Profile UI Improvements**:
-  - Removed redundant action buttons from profile header (moved to dedicated Contact section)
-  - Adjusted profile info positioning to match Steam's layout
-  - Relocated work status badge from header to Developer Level card
-  - Cleaner, more focused profile overview section
-
-## ✨ Features
-
-### 🌐 Multi-Language Support
-- **6 Language Options**: Switch between English, Sarcasm, Binary, Emoji Only, Lorem Ipsum, and Young Stunnah
-  - **English**: Standard professional language
-  - **Sarcasm**: Humorous self-deprecating versions of all text
-  - **Binary**: All text converted to binary code for the tech purists
-  - **Emoji Only**: Pure emoji representations (👤 💼 📧 🎯)
-  - **Lorem Ipsum**: Classic placeholder Latin text
-  - **Young Stunnah**: Filipino Gen Z slang ("Petmalu Profile", "Dev Lodi", "Bet na Bet Projects")
-- **Persistent Preferences**: Language choice saved in LocalStorage across sessions
-- **Comprehensive Translation**: All UI elements translate dynamically
-  - Navigation links, card headers, button text, stat labels, loading states
-  - Portfolio title, section titles, and all user-facing text
-- **Steam-Style Language Selector**: Dropdown submenu in header with hover interaction
-- **Instant Switching**: No page reload required - changes apply immediately
-
-### 🎮 Gamification System
-- **Developer Level System**: XP-based progression with circular progress ring
-  - Calculate level from GitHub stats + achievements (repos × 100 + followers × 50 + stars × 10 + years × 500 + achievements)
-  - Achievement XP ranges from 10-200 XP per achievement (up to 1,000+ total bonus XP)
-  - Real-time XP bar updates when achievements are unlocked
-  - Animated XP progress bar with shimmer effects
-  - Display XP breakdown for each stat source including achievements
-  - 5 stat badges: Repositories, Followers, Stars, Years, and Achievements
-  - Glowing level badge with Steam-inspired design
-- **Visitor Achievement System**: Interactive achievement tracking with 18+ achievements
-  - Real-time toast notifications slide in when achievements unlock
-  - Achievement modal with filters and progress tracking
-  - Triggers: section visits, interactions, time-based, easter eggs (Konami code)
-  - LocalStorage persistence - achievements saved across sessions
-  - Achievement badge in header showing unlock progress (e.g., "5/18")
-  - **NEW**: Achievement XP contributes to developer level progression
-- **Rarity-Based Achievements**: Color-coded achievement system
-  - **Common** (Gray, 10-25 XP), **Rare** (Blue, 30-45 XP), **Epic** (Purple, 50-75 XP), **Legendary** (Orange, 100-200 XP)
-  - Animated shine effects on unlocked achievements
-  - Legendary achievements have pulsing glow animations
-  - Year badges showing when achievements were earned
-  - XP values displayed on each achievement card
-
-### 🎨 Steam-Inspired Design
-- **Cosmic Theme**: Beautiful gradient backgrounds with pink, purple, and green glows
-- **Profile Cards**: Steam-style cards with hover effects and animations
-- **Avatar Frame**: Steam profile frame around avatar with hover effects
-- **Steam Notifications**: Satirical friend notifications in bottom-right corner
-  - Tech celebrities and friends with witty status updates
-  - "Bill Gates is now online", "Elon Musk is playing Twitter Takeover Simulator"
-  - Color-coded by type (online, playing, invite, achievement, trade, message)
-  - Appears every 5-12 seconds, auto-dismisses or click to close
-- **Responsive Layout**: Optimized for desktop, tablet, and mobile devices
-- **Smooth Animations**: Scroll-triggered animations and transitions throughout
-
-### 🚀 Interactive Navigation
-- **Smooth Scrolling**: Click navigation links to smoothly scroll to sections
-- **Active States**: Navigation automatically highlights based on scroll position
-- **Pulse Animations**: Sections glow when navigated to
-- **Mobile-First**: Profile card appears at the top on mobile devices
-
-### 📊 Dynamic Content & Visualizations
-- **GitHub Integration**: Automatically fetches repos, stats, and profile data
-- **GitHub Replay**: Year-in-code carousel with 6 interactive slides
-  - Annual statistics visualization inspired by Spotify Wrapped
-  - Showcase commits, languages, impact, productivity, collaboration, and growth
-  - Year selector for viewing historical data
-  - Contribution heatmap with intensity-based coloring
-  - Smooth carousel transitions with navigation dots
-- **Animated Counters**: Stats count up when scrolling into view with smooth easing
-- **Contribution Heatmap**: GitHub-style activity visualization
-  - Last 12 weeks of activity
-  - 5-level intensity colors
-  - Hover tooltips showing contribution counts
-  - Responsive grid layout with day labels
-- **Language Breakdown Donut Chart**: Visual representation of tech stack
-  - Interactive circular chart with hover effects
-  - Shows language count in center
-  - Color-coded segments matching language colors
-  - Complements horizontal bar visualization
-- **Featured Projects**: Showcase your best work with live demos
-- **Achievement Showcase**: Display your certifications and milestones with rarity tiers
-- **Technical Skills**: Organized by category with Steam-style interactive tags
-- **Resume Viewer**: Built-in PDF viewer with expand/collapse and download
-
-### 🎯 Key Sections
-1. **Header Navigation**: Two-tier Steam-style header with language selector, info button, and achievements
-2. **Profile Overview**: Name, title, location with Steam profile frame
-3. **Featured Projects**: GitHub repos with stars, forks, tech stacks, and live demos
-4. **GitHub Replay**: Year-in-code visualization with 6 interactive slides and year selector
-5. **Achievement Showcase**: Rarity-based certifications and career milestones
-6. **Technical Skills**: Categorized skills with Steam-style interactive tags
-7. **Resume Viewer**: Embedded PDF with expand/collapse and download
-8. **Personal Hobbies**: Interactive hobby cards with engagement tracking
-9. **Developer Level**: XP-based level system with progress ring, 5 stat badges (GitHub + Achievements), and work status
-10. **GitHub Stats**: Animated counters, language donut chart, and completion rate
-11. **Activity Feed**: Contribution heatmap and recent GitHub activity timeline
-12. **Social Links**: GitHub, LinkedIn, Email contact info
-13. **Visitor Achievements**: Interactive achievement system with toast notifications, modal, and XP rewards
-14. **Steam Notifications**: Satirical friend notifications appearing periodically
-15. **Info Modal**: Behind-the-scenes details about portfolio mechanics, XP system, and features
+The backend synchronizes live GitHub statistics (74,900+ contributions, 99+ repositories, commits, and activity) with in-memory TTL caching, rate-limit shielding, stale-while-revalidate fallbacks, and a low-token AI Twin chatbot.
 
 ---
 
-## 🤖 AI Digital Twin Chatbot
-
-### Problem Statement
-> *"Build Your Digital Twin with Tools and RAG"*
-
-This portfolio features a fully functional **AI-powered Digital Twin** — a smart AI version of Krishna Patil that talks like him, shares his skills from his resume, and helps recruiters and visitors with questions and daily tasks. Built with LangChain and Groq LLM, the chatbot combines **Retrieval-Augmented Generation (RAG)** and **multiple real-world tools** to create a truly personal AI companion.
-
----
-
-### 🧠 Architecture Overview
+## Architecture Overview
 
 ```
-User Message (Chat UI)
-        │
-        ▼
-FastAPI Backend (/api/chat)
-        │
-        ▼
-LangChain Tool-Calling Agent (Groq LLM)
-        │
-   ┌────┴────────────────────────────────┐
-   │                                     │
-   ▼                                     ▼
-RAG Pipeline (ChromaDB)          External Tools
-   │                              ├── Web Search (SerpAPI)
-   ▼                              ├── Weather API (WeatherStack)
-Resume & Knowledge Base           ├── Calculator
-   │                              ├── Schedule Meeting
-   ▼                              └── Check Calendar
-Accurate Personal Info
+Client Browser (Vercel / Netlify / Render)
+      │
+      ▼  (HTTP / JSON - /api/...)
+FastAPI Backend Service (Render Free Tier)
+      │
+      ├── /health & /keepalive (< 5ms response, 0 external calls)
+      ├── Security Middleware (100KB body limit, security headers, CORS)
+      ├── Chat Rate Limiter (20 req/min per IP)
+      │
+      ├── In-Memory TTL Cache Layer
+      │     ├── Profile: 6 hours
+      │     ├── Repositories: 1 hour
+      │     ├── Contributions: 2 hours
+      │     ├── Activity & Commits: 10 minutes
+      │
+      ├── Stale-While-Revalidate Engine (zero downtime on GitHub rate limits)
+      ├── GitHub REST & GraphQL API Client (timeout: 8s, 0 token leaks)
+      └── AI Twin Token Economy (zero-token deterministic fast-path + 1-call Groq/Gemini)
 ```
 
 ---
 
-### 🗂️ What Powers the Chatbot
+## Deployment Target: Render Free Tier
 
-#### 1. 🦜 LangChain Agent Framework
-- Uses **`create_tool_calling_agent`** — the modern LangChain agent that natively routes questions to the correct tool
-- Wrapped in **`AgentExecutor`** with `handle_parsing_errors=True` for robust production behaviour
-- **`RunnableWithMessageHistory`** maintains full per-session conversation memory, allowing natural multi-turn dialogue
+The backend is engineered specifically to operate within Render Free Tier limits (512 MB RAM, ephemeral storage, automatic sleep on inactivity):
+- **Ultra-low memory footprint**: ~25 MB RAM.
+- **Sub-second cold start**: Boots in ~300ms. No database, no heavy ML models in memory.
+- **Fast health check**: `GET /health` and `GET /keepalive` respond in <10ms without external requests.
+- **Render dynamic PORT**: Automatically binds to `0.0.0.0:$PORT`.
+- **Zero background thread loops**: Data is only fetched on request if cache is expired.
 
-#### 2. 🤖 LLM: Groq (llama-3.1-8b-instant)
-- Model: **`llama-3.1-8b-instant`** via the `langchain-groq` integration
-- Config: `temperature=0.3`, `max_tokens=1024`
-- Chosen for its exceptional **speed** (Groq's LPU hardware) and **quality** for conversational tasks
+---
 
-#### 3. 📚 RAG Pipeline — Resume Knowledge Base
-- **Document Loading**: `resume_text.txt` and `knowledge_base.md` are loaded with LangChain's `TextLoader`
-- **Chunking**: `RecursiveCharacterTextSplitter` with `chunk_size=500`, `chunk_overlap=100`
-- **Embeddings**: **Google Generative AI Embeddings** (`models/embedding-001`) via `langchain-google-genai`
-- **Vector Store**: **ChromaDB** persisted to `./twin_chroma_db` — stores and retrieves the most relevant 5 chunks per query
-- **Retrieval**: On every question about Krishna, the agent fetches relevant document chunks and feeds them as context to the LLM
+## Render Deployment Guide (Step-by-Step)
 
-#### 4. 🛠️ Tools (Satisfies the "2+ Tool" Requirement)
+### Step 1: Push Repository to GitHub
+Ensure all code and `render.yaml` are pushed to your GitHub repository:
+```bash
+git add .
+git commit -m "Configure Render Free Tier deployment"
+git push origin main
+```
 
-| Tool | Description | API Used |
+### Step 2: Open Render Dashboard
+Go to [dashboard.render.com](https://dashboard.render.com) and log in.
+
+### Step 3: Create Blueprint or Web Service
+- **Option A (Blueprint — Recommended)**:
+  1. Click **New +** → **Blueprint**.
+  2. Connect your GitHub repository `kriss2012/portfolio`.
+  3. Render will detect `render.yaml` and configure the service automatically.
+- **Option B (Manual Web Service)**:
+  1. Click **New +** → **Web Service**.
+  2. Connect your repository.
+  3. Configure settings:
+     - **Name**: `krishna-portfolio-api`
+     - **Runtime**: `Python 3`
+     - **Build Command**: `pip install -r backend/requirements.txt`
+     - **Start Command**: `python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+     - **Health Check Path**: `/health`
+     - **Plan**: `Free`
+
+### Step 4: Configure Environment Variables in Render
+In your Render Service Dashboard → **Environment**, add:
+| Key | Value | Description |
 |---|---|---|
-| `resume_knowledge_base` | Answers questions about Krishna's education, skills, projects, and experience using RAG | ChromaDB + Google Embeddings |
-| `web_search` | Searches the web for current events and general knowledge | SerpAPI |
-| `get_weather` | Fetches real-time weather for any city | WeatherStack API |
-| `calculator` | Evaluates mathematical expressions safely | Python `eval` |
-| `schedule_meeting` | Schedules a meeting with Krishna, checks for conflicts | Local `meetings.json` |
-| `check_schedule` | Checks Krishna's schedule and free days for any date | Local `meetings.json` |
-| `get_current_datetime` | Returns the current date and time | Python `datetime` |
+| `PYTHON_VERSION` | `3.11.9` | Python runtime version |
+| `ENVIRONMENT` | `production` | Production mode |
+| `GITHUB_USERNAME` | `kriss2012` | GitHub account username |
+| `GITHUB_TOKEN` | *your_token* | Read-only GitHub PAT (increases rate limit from 60 to 5,000 req/hr) |
+| `GROQ_API_KEY` | *your_groq_key* | Free-tier Groq key for AI Twin (optional) |
+| `GEMINI_API_KEY` | *your_gemini_key* | Google Gemini key for AI Twin (optional) |
+| `CORS_ORIGIN` | `*` or your frontend URL | Allowed frontend origins |
 
-#### 5. 🗣️ Persona & System Prompt
-The agent is given a custom **system prompt** that instructs it to:
-- Act and speak **exactly like Krishna Patil** in the first person
-- Always use the `resume_knowledge_base` tool when asked about personal background
-- Use `check_schedule` and `schedule_meeting` when a recruiter wants to book a meeting
-- Keep responses **short, conversational, and professional** — like a real text message exchange
+> **Security Note**: Never commit `GITHUB_TOKEN` or `GROQ_API_KEY` to git. Only configure them in Render environment settings.
 
-#### 6. 🏛️ FastAPI Backend
-- Serves the chatbot on `POST /api/chat`
-- Accepts `{ "message": string, "session_id": string }`
-- Returns `{ "reply": string }`
-- CORS enabled for cross-origin requests from the portfolio frontend
+### Step 5: Deploy
+Click **Create Web Service** / **Apply**. Render will install dependencies and start the server.
 
----
+### Step 6: Verify Deployment
+Once live, your service will have a URL like `https://krishna-portfolio-api.onrender.com`.
+Verify via browser or curl:
+- `https://your-service.onrender.com/health` → `{"status": "ok", "service": "krishna-portfolio-api", ...}`
+- `https://your-service.onrender.com/api/status` → `{"status": "ok", "github": "available", ...}`
 
-### 📡 Judging Criteria Coverage
-
-| Criteria | How it's Met |
-|---|---|
-| **Helpful in daily life tasks** | Weather, calculator, web search, and calendar scheduling tools |
-| **Represents and impresses recruiters** | RAG-powered resume knowledge, first-person Krishna persona, scheduling support |
-| **At least 2 useful tools** | 7 tools implemented (far exceeds the minimum) |
-| **RAG Implementation** | Full ChromaDB pipeline with Google Embeddings and resume/knowledge base |
-| **Chosen LLM** | Groq (llama-3.1-8b-instant) |
-| **Chosen Embedding Model** | Google Generative AI (`models/embedding-001`) |
+### Step 7: Configure External Keep-Alive (Prevent Cold Spins)
+Render Free web services spin down after 15 minutes of inactivity. To keep your backend warm and responsive:
+1. Go to a free monitoring service like [cron-job.org](https://cron-job.org) or [UptimeRobot](https://uptimerobot.com).
+2. Set up an HTTP `GET` request every **5 minutes** to:
+   ```
+   https://your-service.onrender.com/keepalive
+   ```
+3. **Safety Guarantee**: `/keepalive` executes in ~3ms. It does **NOT** call GitHub, does **NOT** call AI, and does **NOT** trigger cache refreshes, consuming zero rate limits or tokens.
 
 ---
 
-### 📁 Backend File Structure
+## API Endpoints Reference
 
+| Method | Endpoint | Purpose | External Calls |
+|---|---|---|---|
+| `GET` | `/health` | Render health check (<10ms) | None |
+| `GET` | `/keepalive` | 5-min uptime monitor ping | None |
+| `GET` | `/ready` | Readiness probe | None |
+| `GET` | `/api/status` | Diagnostics & uptime (no secrets) | None |
+| `GET` | `/api/github/profile` | Normalized profile with followers/repos | GitHub (cached 6h) |
+| `GET` | `/api/github/repositories` | Normalized repository catalog | GitHub (cached 1h) |
+| `GET` | `/api/github/activity` | Recent events feed | GitHub (cached 10m) |
+| `GET` | `/api/github/contributions?year=2026` | Real 53-week heatmap & annual totals | GitHub GraphQL (cached 2h) |
+| `GET` | `/api/github/commits` | Recent public commits timeline | GitHub (cached 10m) |
+| `GET` | `/api/github/overview` | Master payload for frontend hooks | GitHub (cached) |
+| `GET` | `/api/github/readme?repo=...` | Sanitized README content for modal | GitHub (cached) |
+| `POST` | `/api/github/refresh` | Clear cache and re-sync | GitHub |
+| `POST` | `/api/chat` | AI Twin with rate limiting & token economy | Groq/Gemini/Fallback |
+
+---
+
+## Frontend Integration (`VITE_API_BASE_URL`)
+
+The frontend uses a single centralized API base configuration in [src/config/api.ts](file:///c:/Users/IMRD/Documents/GitHub/portfolio/src/config/api.ts):
+```ts
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  ''
+).replace(/\/$/, '')
 ```
-backend/
-├── main.py              # FastAPI app + Agent + all 7 tools
-├── rag_setup.py         # Script to build ChromaDB from knowledge base
-├── chat.py              # Standalone terminal chat interface (dev/testing)
-├── app.py               # Streamlit UI version (alternative interface)
-├── knowledge_base.md    # Comprehensive personal knowledge base
-├── resume_text.txt      # Krishna's resume for RAG ingestion
-├── requirements.txt     # Pinned Python dependencies
-├── runtime.txt          # Forces Python 3.11.9 on Render
-├── meetings.json        # Auto-created: stores scheduled meetings
-└── twin_chroma_db/      # Auto-created: persisted ChromaDB vector store
-```
+
+- **Local Development**: Leave empty. The Vite dev server proxies `/api` to `http://localhost:8000`.
+- **Production (Separate Frontend, e.g. Vercel / Netlify)**:
+  Set environment variable in Vercel/Netlify:
+  ```
+  VITE_API_BASE_URL=https://krishna-portfolio-api.onrender.com
+  ```
+- **Production (Unified Full-Stack on Render)**:
+  If deployed together, the backend automatically serves the pre-built `dist/` directory at root `/` with SPA routing. No CORS configuration needed!
 
 ---
 
-### 🔧 Backend Setup (Local Development)
+## AI Twin Token-Saving Strategy
 
-#### Prerequisites
-- Python 3.11+
-- API Keys: Groq, Google Gemini, SerpAPI, WeatherStack
+To prevent exhausting free AI API quotas:
+1. **Tier 0: Greetings & Intro**: Instant scripted replies for greetings (`hi`, `hello`, `who are you`) using 0 AI tokens.
+2. **Tier 1: Deterministic Portfolio Q&A**: Direct structured matching in `portfolio_data.py` answers questions about Krishna's education, experience, achievements, skills, contact, and projects with 0 AI tokens and 0 hallucination.
+3. **Tier 2: In-Memory Answer Cache**: Caches common questions for 30 minutes (max 100 entries).
+4. **Tier 3: 1 Single AI Call Max**: When an AI call is required, only compact relevant context (<1500 chars) is sent. The model (`llama-3.1-8b-instant`) is capped at 800 tokens with an 8-second timeout.
+5. **Rate Limiter**: Strict per-IP rate limiter allows max 20 messages per minute, returning HTTP 429 if abused.
 
-#### Steps
+---
 
-1. **Navigate to backend**
+## Local Development Setup
+
+### 1. Backend Server
 ```bash
 cd backend
-```
-
-2. **Create a virtual environment**
-```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
-```
-
-3. **Install dependencies**
-```bash
 pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-4. **Configure environment variables** — create a `.env` file:
-```env
-Groq_Api_Key=your_groq_api_key
-Gemini_Api_Key=your_google_gemini_api_key
-Serp_Api_Key=your_serpapi_key
-WeatherStack_Api_Key=your_weatherstack_key
-Calender_Api_Key=your_google_calendar_api_key
-```
-
-5. **Build the RAG knowledge base** (run once)
-```bash
-python rag_setup.py
-```
-
-6. **Start the backend server**
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-The API is now available at `http://localhost:8000/api/chat`.
-
----
-
-### ☁️ Backend Deployment (Render)
-
-The backend is deployed on [Render](https://render.com) as a Python web service.
-
-**Environment Variables to add in Render Dashboard:**
-
-| Key | Value |
-|---|---|
-| `Groq_Api_Key` | Your Groq API key |
-| `Gemini_Api_Key` | Your Google Gemini API key |
-| `Serp_Api_Key` | Your SerpAPI key |
-| `WeatherStack_Api_Key` | Your WeatherStack key |
-| `PYTHON_VERSION` | `3.11.9` |
-
-**Build Command:** `pip install -r requirements.txt`
-**Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-**Root Directory:** `backend`
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 18.3** - UI framework with hooks (useState, useEffect, useContext)
-- **TypeScript 5.6** - Type safety and interfaces
-- **Vite 6.0** - Build tool and dev server with HMR
-- **CSS3** - Styling with custom properties and animations
-- **React Context API** - Global state management for language switching
-- **LocalStorage API** - Persistent user preferences across sessions
-
-### APIs & Services
-- **GitHub REST API** - Fetch repos and user data
-- **GitHub GraphQL API** - Contribution graphs and advanced queries
-- **DiceBear Avatars API** - Generate avatar images for Steam notifications
-
-### Deployment
-- **Vercel** - Optimized for deployment
-- **GitHub Pages** - Alternative deployment option
-
-## 📦 Installation
-
-### Prerequisites
-- Node.js 18+ and npm
-
-### Setup
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/zyonify/steam-profile-portfolio.git
-cd steam-profile-portfolio
-```
-
-2. **Install dependencies**
+### 2. Frontend Development Server
+In the root directory:
 ```bash
 npm install
-```
-
-3. **Configure your portfolio**
-
-   Edit `src/config/portfolio.config.ts`:
-   ```typescript
-   export const portfolioConfig = {
-     personal: {
-       name: 'Your Name',
-       title: 'Your Title',
-       email: 'your.email@example.com',
-       // ... more settings
-     },
-     social: {
-       github: 'your-github-username',
-       linkedin: 'https://linkedin.com/in/your-profile',
-     },
-     // ... more configuration
-   }
-   ```
-
-4. **Add your assets to `public/` folder**
-   - `profile-avatar.gif` - Your animated avatar
-   - `profile-background.jpg` - Background image
-   - `resume.pdf` - Your resume PDF
-   - `zyonify-logo.png` - Your logo
-
-5. **Run development server**
-```bash
 npm run dev
 ```
+Open `http://localhost:5173`.
 
-Visit `http://localhost:5173` to see your portfolio!
-
-## 🚀 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com)
-3. Configure build settings:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-4. Deploy!
-
-### Deploy to GitHub Pages
-
-1. Update `vite.config.ts` with your repo name:
-```typescript
-export default defineConfig({
-  base: '/your-repo-name/',
-})
-```
-
-2. Build and deploy:
+### 3. Run Production Build & Tests
 ```bash
-npm run build
-npm run deploy
+npm run build      # Compiles React TypeScript bundle to dist/
+npx vitest run     # Runs unit tests (36 tests)
+python scratch/test_all_endpoints.py # Verifies all API endpoints
 ```
-
-## ⚙️ Configuration
-
-### Portfolio Config
-All customization is done through `src/config/portfolio.config.ts`:
-
-```typescript
-export const portfolioConfig = {
-  personal: {
-    name: 'Your Name',
-    title: 'Your Title',
-    location: 'Your Location',
-    email: 'your.email@example.com',
-    banner: '/steam-profile-portfolio/profile-background.jpg',
-    avatar: '/steam-profile-portfolio/profile-avatar.gif',
-  },
-
-  featuredProjects: [
-    {
-      repo: 'your-repo-name',
-      demoUrl: 'https://demo-url.com',
-      featured: true,
-    },
-  ],
-
-  achievements: [
-    {
-      title: 'Your Achievement',
-      description: 'Description',
-      icon: '🏆',
-      logo: '/your-badge-logo.png', // Optional: path to badge image
-      year: 2024,
-      unlocked: true,
-      rarity: 'legendary', // 'common' | 'rare' | 'epic' | 'legendary'
-    },
-  ],
-
-  technicalSkills: {
-    'Languages & Frameworks': ['C#', '.NET', 'TypeScript'],
-    'Front-end & UI': ['React', 'Tailwind CSS'],
-    // ... more categories
-  },
-}
-```
-
-### Theme Customization
-Edit `src/styles/index.css` for cosmic theme colors:
-```css
-body.CosmicTheme {
-  --gradient-right: rgba(248, 70, 180, 0.301);
-  --gradient-left: rgba(9, 243, 99, 0.247);
-  --gradient-background: rgba(46, 13, 36, 0.93);
-}
-```
-
-## 🎨 Features Showcase
-
-### 🌐 Multi-Language System
-
-Switch between 6 different languages for a completely different experience:
-
-**English (Standard)**
-- Navigation: Profile, Projects, Contact, Skills
-- Stats: Developer Level, Years of Experience, Repositories
-- Headers: Featured Projects, Achievement Showcase, Recent Activity
-
-**Sarcasm (Humorous)**
-- Navigation: Profile (Totally Unique), Projects (Revolutionary), Contact (I'll Respond, Promise)
-- Stats: Developer Level (Self-Proclaimed), Years of Pretending, Code Dumps
-- Headers: Featured Experiments, Trophy Case (Empty Soon), Recent Excuses
-
-**Binary (Tech Purist)**
-- Everything converted to binary code
-- Navigation: `01010000 01110010 01101111` (Profile)
-- Complete binary representation of all text
-
-**Emoji Only (Visual)**
-- Navigation: 👤 (Profile), 💼 (Projects), 📧 (Contact), 🎯 (Skills)
-- Stats: 👨‍💻 📊 (Developer Level), 📅 ⏳ (Years), 📦 (Repositories)
-- Pure emoji-based communication
-
-**Lorem Ipsum (Classic)**
-- Navigation: Lorem, Ipsum, Dolor, Sit Amet
-- Headers: Quis Nostrud, Exercitation Ullamco, Magna Aliqua
-- Traditional placeholder Latin text throughout
-
-**Young Stunnah (Filipino Gen Z Slang)**
-- Navigation: Petmalu Profile, Werpa Projects, Chika Tayo, Swabe Skills
-- Stats: Dev Lodi Level, G na G Years, Code Sesh
-- Headers: Bet na Bet Projects, Flex Wall, Latest Gawa
-- Portfolio Title: PORTFOLIO NI ZYON
-
-**How to Use:**
-1. Click on your name in the top-right header
-2. Hover over "Change language"
-3. Select your preferred language from the submenu
-4. Watch all text instantly transform!
-5. Your choice is saved automatically for future visits
-
-### 🏆 Developer Level System
-The gamification system calculates your developer level based on GitHub activity and visitor achievements:
-- **Repositories**: 100 XP each
-- **Followers**: 50 XP each
-- **Stars**: 10 XP each
-- **Years of Experience**: 500 XP per year
-- **Achievements**: Variable XP (10-200 per achievement)
-  - Common achievements: 10-25 XP
-  - Rare achievements: 30-45 XP
-  - Epic achievements: 50-75 XP
-  - Legendary achievements: 100-200 XP
-
-Level up using a Steam-like bracket system! The circular progress ring shows your progress to the next level with smooth animations and glowing effects. Unlock achievements to boost your XP and level up faster!
-
-### 🎯 Achievement Rarity Tiers
-Achievements are color-coded by rarity:
-- **Common**: Gray - Basic achievements and certifications
-- **Rare**: Blue - Notable accomplishments
-- **Epic**: Purple - Significant milestones and advanced certifications
-- **Legendary**: Orange - Top-tier achievements with pulsing glow effect
-
-Each tier has unique visual effects including borders, backgrounds, and animations.
-
-### 📊 Data Visualizations
-
-#### Contribution Heatmap
-- GitHub-style grid showing last 12 weeks of activity
-- 5 intensity levels from light to bright blue
-- Hover to see exact contribution counts
-- Automatically generated from your recent GitHub events
-
-#### Language Breakdown Chart
-- Interactive donut chart showing your top programming languages
-- Color-coded segments matching each language's official color
-- Hover effects that brighten and enlarge segments
-- Displays total language count in the center
-
-#### Animated Stat Counters
-- Numbers count up smoothly when scrolling into view
-- Smooth easing animations (ease-out cubic)
-- Icons with hover glow effects
-- Triggered by Intersection Observer for performance
-
-### Navigation System
-- Smooth scroll with offset for sticky header
-- Active link highlighting based on scroll position
-- Pulse animation on section navigation
-- Mobile-responsive navigation
-
-### Skills Display
-Skills organized in Steam showcase style:
-- **Languages & Frameworks**: C#, .NET, Python, JavaScript
-- **Front-end & UI**: React, HTML5, CSS3, Tailwind
-- **Database**: MS SQL Server, Supabase, Firebase
-- **Tools & Platforms**: Visual Studio, Git, Azure DevOps
-- **Practices**: Agile Scrum, CI/CD, Code Reviews
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👤 Author
-
-**Victor Zyon Tiangson**
-- GitHub: [@zyonify](https://github.com/zyonify)
-- LinkedIn: [Victor Zyon Tiangson](https://www.linkedin.com/in/zyontiangson/)
-- Email: tiangsonzyon@gmail.com
-
-## 🙏 Acknowledgments
-
-- Inspired by [Steam Community](https://steamcommunity.com/) profile design
-- Built with [Vite](https://vitejs.dev/) and [React](https://react.dev/)
-- Cosmic theme inspired by Steam's profile customization
 
 ---
 
-**Note**: Don't forget to star ⭐ this repository if you found it helpful!
+## Post-Deployment Testing Checklist
 
-Made with 💜 and inspired by Steam
+Run these quick checks against your deployed Render URL:
+```bash
+# 1. Health check (Expected: 200, <10ms)
+curl https://your-service.onrender.com/health
+
+# 2. Keepalive ping (Expected: 200, <10ms)
+curl https://your-service.onrender.com/keepalive
+
+# 3. Status check (Expected: 200, github: available)
+curl https://your-service.onrender.com/api/status
+
+# 4. Profile endpoint (Expected: 200, followers/repos from GitHub)
+curl https://your-service.onrender.com/api/github/profile
+
+# 5. Contributions endpoint (Expected: 200, 74900+ contributions)
+curl "https://your-service.onrender.com/api/github/contributions?year=2026"
+
+# 6. Chatbot endpoint (Expected: 200)
+curl -X POST https://your-service.onrender.com/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What projects has Krishna built?"}'
+```
+
+---
+
+## License
+MIT License © 2026 Krishna Chandrakant Patil.

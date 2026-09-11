@@ -182,3 +182,24 @@ body.CosmicTheme .card-header {
     padding: 15px;
   }
 }
+
+@media (max-width: 480px) {
+  .container {
+    padding: 8px 6px;
+  }
+
+  .content-wrapper {
+    padding: 10px 8px;
+    gap: 12px;
+  }
+
+  .card {
+    padding: 12px 10px;
+  }
+
+  .main-content,
+  .sidebar {
+    gap: 12px;
+  }
+}
+

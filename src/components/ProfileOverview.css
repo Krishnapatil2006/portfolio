@@ -120,6 +120,7 @@
   .profile-left {
     width: 100%;
     justify-content: center;
+    margin-left: 0;
   }
 
   .avatar-container {
@@ -150,10 +151,17 @@
   }
 
   .profile-name {
-    font-size: 24px;
+    font-size: 22px;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .profile-content {
-    padding: 20px;
+    padding: 18px 12px;
+  }
+
+  .profile-location {
+    justify-content: center;
   }
 }
+

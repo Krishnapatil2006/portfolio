@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import './ActivityFeed.css'
 import { portfolioConfig } from '../config/portfolio.config'
+import { fetchGitHubOverview } from '../services/githubApi'
 import { getProcessedActivity } from '../services/github'
 import { ProcessedActivity } from '../types'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -44,24 +45,61 @@ function generateActivityHeatmap(
 
 function ActivityFeed() {
   const [activities, setActivities] = useState<ProcessedActivity[]>([])
+  const [totalContributions, setTotalContributions] = useState<number>(0)
+  const [realWeeks, setRealWeeks] = useState<
+    Array<{
+      contributionDays: Array<{
+        date: string
+        contributionCount: number
+        contributionLevel: string
+        color: string
+      }>
+    }>
+  >([])
   const [loading, setLoading] = useState(true)
   const { t } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
 
   const loadActivity = useCallback(async () => {
-    let isMounted = true
     try {
       setLoading(true)
-      const data = await getProcessedActivity()
-      if (isMounted) setActivities(data)
+      const overview = await fetchGitHubOverview()
+      if (overview?.contributions) {
+        setTotalContributions(overview.contributions.totalContributions || 0)
+        if (overview.contributions.weeks && overview.contributions.weeks.length > 0) {
+          const todayStr = new Date().toISOString().split('T')[0]
+          const pastWeeks = overview.contributions.weeks.filter(w =>
+            w.contributionDays && w.contributionDays.some(d => d.date <= todayStr)
+          )
+          const targetWeeks = pastWeeks.length > 0 ? pastWeeks : overview.contributions.weeks
+          setRealWeeks(targetWeeks.slice(-16))
+        }
+      }
+
+      if (overview?.activity && overview.activity.length > 0) {
+        const mapped: ProcessedActivity[] = overview.activity.map(a => ({
+          id: a.id,
+          type: a.type === 'push' ? 'commit' : 'commit',
+          action: a.badge || 'Updated repository',
+          target: a.repo,
+          time: a.timeAgo || 'recently',
+          icon: a.type === 'push' ? '⚡' : a.type === 'star' ? '⭐' : a.type === 'fork' ? '🍴' : '📝',
+        }))
+        setActivities(mapped)
+      } else {
+        const data = await getProcessedActivity()
+        setActivities(data)
+      }
     } catch (error) {
       console.error('Error loading activity:', error)
+      try {
+        const fallback = await getProcessedActivity()
+        setActivities(fallback)
+      } catch {
+        // Safe fallback
+      }
     } finally {
-      if (isMounted) setLoading(false)
-    }
-
-    return () => {
-      isMounted = false
+      setLoading(false)
     }
   }, [])
 
@@ -94,7 +132,31 @@ function ActivityFeed() {
   )
 
   const maxActivity = Math.max(...heatmapData.flat(), 1)
-  const totalContributions = activities.length
+
+  const realMonthLabels = useMemo(() => {
+    if (!realWeeks || realWeeks.length === 0) return []
+    let lastRenderedIndex = -99
+    return realWeeks.map((week, weekIndex) => {
+      const firstDay = week.contributionDays?.[0]
+      if (!firstDay || !firstDay.date) return ''
+      const date = new Date(firstDay.date)
+      const month = date.toLocaleDateString('en-US', { month: 'short' })
+
+      const prevWeek = realWeeks[weekIndex - 1]
+      const prevDate = prevWeek?.contributionDays?.[0] ? new Date(prevWeek.contributionDays[0].date) : null
+      const isMonthChange = prevDate !== null && date.getMonth() !== prevDate.getMonth()
+
+      if (weekIndex === 0) {
+        lastRenderedIndex = 0
+        return month
+      }
+      if (isMonthChange && (weekIndex - lastRenderedIndex >= 3)) {
+        lastRenderedIndex = weekIndex
+        return month
+      }
+      return ''
+    })
+  }, [realWeeks])
 
   return (
     <section
@@ -114,7 +176,7 @@ function ActivityFeed() {
           <div className="contribution-heatmap">
             <div className="heatmap-header">
               <span className="heatmap-title">
-                {totalContributions} {t.contributions}
+                {loading ? '—' : totalContributions.toLocaleString()} {t.contributions}
               </span>
               <div className="heatmap-legend">
                 <span className="legend-label">{t.less}</span>
@@ -148,45 +210,85 @@ function ActivityFeed() {
 
               <div className="heatmap-content">
                 <div className="heatmap-months">
-                  {heatmapData.map((_, weekIndex) => {
-                    const date = new Date()
-                    date.setDate(date.getDate() - (WEEKS - weekIndex) * 7)
-                    const month = date.toLocaleDateString('en-US', { month: 'short' })
-
-                    const prevDate = new Date(date)
-                    prevDate.setDate(prevDate.getDate() - 7)
-
-                    const showMonth =
-                      weekIndex === 0 ||
-                      date.getMonth() !== prevDate.getMonth()
-
-                    return (
+                  {realWeeks.length > 0 ? (
+                    realMonthLabels.map((month, weekIndex) => (
                       <div key={weekIndex} className="heatmap-month-label">
-                        {showMonth ? month : ''}
+                        {month}
                       </div>
-                    )
-                  })}
+                    ))
+                  ) : (
+                    heatmapData.map((_, weekIndex) => {
+                      const date = new Date()
+                      date.setDate(date.getDate() - (WEEKS - weekIndex) * 7)
+                      const month = date.toLocaleDateString('en-US', { month: 'short' })
+
+                      const prevDate = new Date(date)
+                      prevDate.setDate(prevDate.getDate() - 7)
+
+                      const showMonth =
+                        weekIndex === 0 ||
+                        date.getMonth() !== prevDate.getMonth()
+
+                      return (
+                        <div key={weekIndex} className="heatmap-month-label">
+                          {showMonth ? month : ''}
+                        </div>
+                      )
+                    })
+                  )}
                 </div>
 
                 <div className="heatmap-weeks">
-                  {heatmapData.map((week, weekIndex) => (
-                    <div key={weekIndex} className="heatmap-week">
-                      {week.map((count, dayIndex) => {
-                        const intensity =
-                          count === 0
-                            ? 0
-                            : Math.ceil((count / maxActivity) * 4)
+                  {realWeeks.length > 0 ? (
+                    realWeeks.map((week, weekIndex) => (
+                      <div key={weekIndex} className="heatmap-week">
+                        {week.contributionDays.map((day, dayIndex) => {
+                          const count = day.contributionCount || 0
+                          let intensity = 0
+                          if (count > 0) {
+                            intensity = count >= 13 ? 4 : count >= 8 ? 3 : count >= 4 ? 2 : 1
+                          }
+                          const formattedDate = day.date
+                            ? new Date(day.date).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
+                            : ''
+                          const tooltip = formattedDate
+                            ? `${formattedDate}\n${count} contribution${count !== 1 ? 's' : ''}`
+                            : `${count} contribution${count !== 1 ? 's' : ''}`
 
-                        return (
-                          <div
-                            key={`${weekIndex}-${dayIndex}`}
-                            className={`heatmap-day intensity-${intensity}`}
-                            title={`${count} contribution${count !== 1 ? 's' : ''}`}
-                          />
-                        )
-                      })}
-                    </div>
-                  ))}
+                          return (
+                            <div
+                              key={`${weekIndex}-${dayIndex}`}
+                              className={`heatmap-day intensity-${intensity}`}
+                              title={tooltip}
+                            />
+                          )
+                        })}
+                      </div>
+                    ))
+                  ) : (
+                    heatmapData.map((week, weekIndex) => (
+                      <div key={weekIndex} className="heatmap-week">
+                        {week.map((count, dayIndex) => {
+                          const intensity =
+                            count === 0
+                              ? 0
+                              : Math.ceil((count / maxActivity) * 4)
+
+                          return (
+                            <div
+                              key={`${weekIndex}-${dayIndex}`}
+                              className={`heatmap-day intensity-${intensity}`}
+                              title={`${count} contribution${count !== 1 ? 's' : ''}`}
+                            />
+                          )
+                        })}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

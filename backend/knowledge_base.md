@@ -26,7 +26,7 @@
 - **LinkedIn**: https://www.linkedin.com/in/krishna-patil-33969536b
 - **GitHub**: https://github.com/kriss2012
 - **Portfolio 1**: https://tgkrish-portfolio.netlify.app/
-- **Portfolio 2**: https://kiriorg.netlify.app/
+- **Portfolio 2**: https://kirigentech.in
 - **Instagram**: https://www.instagram.com/mr_krishna_yt____
 - **YouTube**: https://www.youtube.com/@IQOOTGKRISH-13
 - **Email**: 202krishnapatil@gmail.com
@@ -45,6 +45,32 @@
 
 ## 5. Detailed Project Portfolio
 
+
+### TraffiX-AI (Intelligent Traffic Analysis & Optimization)
+**Role**: Creator & Lead Developer
+**GitHub**: https://github.com/kriss2012/TraffiX-AI
+**Description**: An AI-powered real-time traffic detection, vehicle tracking, and congestion control system using Computer Vision and deep learning. It detects vehicle density at intersections and dynamically optimizes traffic signal timings to reduce wait times and emissions.
+**Problem Solved**: Static timers cause unnecessary traffic congestion and idle fuel burning at intersections.
+**What Krishna Built**: Real-time vehicle counting, classification, and density estimation pipeline with adaptive signal switching logic.
+**Features**:
+- Real-time vehicle detection and tracking (cars, bikes, buses, trucks)
+- Dynamic green signal duration optimization based on live queue density
+- Intersection congestion heatmaps and incident alerts
+- Lightweight edge-compatible inference architecture
+**Tech Stack**: Python, OpenCV, YOLO, TensorFlow, Flask, NumPy.
+
+### Plagiarism-Checker (AI Code & Text Plagiarism Detection)
+**Role**: Creator & Developer
+**GitHub**: https://github.com/kriss2012/Plagiarism-Checker
+**Description**: An advanced dual-engine similarity and plagiarism detection platform for source code and written documents using tokenized Abstract Syntax Tree (AST) parsing and NLP similarity scoring.
+**Problem Solved**: Standard text matchers fail to detect code plagiarism when variables are renamed or code structure is lightly refactored.
+**What Krishna Built**: AST-level token parser that analyzes syntactic structures regardless of variable renaming, alongside TF-IDF cosine similarity for text.
+**Features**:
+- Multi-language AST-based structural code plagiarism detection
+- Semantic text similarity and document comparison
+- Side-by-side highlighted code diffs and similarity percentage metrics
+- Batch submission processing and PDF/HTML report exports
+**Tech Stack**: Python, NLP, Abstract Syntax Tree (AST), scikit-learn, Flask, HTML5, CSS3.
 
 ### AI Medical Consultancy System (MediAI Pro)
 **Role**: Creator & Developer
@@ -133,4 +159,4 @@
 - **Timezone**: IST (Indian Standard Time, UTC+5:30).
 - **Mode**: Open to Google Meet, Zoom, Microsoft Teams, or in-person (Pachora/Jalgaon area).
 
-
+

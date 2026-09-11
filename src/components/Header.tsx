@@ -196,7 +196,7 @@ function Header({ onOpenAchievements, onOpenInfo, onOpenWallet }: HeaderProps) {
         <div className="header-container">
           <div className="header-left">
             <div className="logo" onClick={trackLogoClick}>
-              <img src="/tgkrish.png" alt="tgkrish Logo" className="logo-img" />
+              <img src="/profile-avatar.gif" alt="Krishna Logo" className="logo-img" />
               <span className="logo-text">{t.portfolioTitle}</span>
             </div>
 

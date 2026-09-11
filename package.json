@@ -6,7 +6,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}",
+    "backend": "python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
   },
   "keywords": [
     "steam-inspired-portfolio",

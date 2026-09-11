@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './StatsSection.css'
-import { getStats } from '../services/github'
+import { fetchGitHubOverview } from '../services/githubApi'
 import { ProcessedStats } from '../types'
 import { trackSectionVisit } from '../services/achievementService'
 import { portfolioConfig } from '../config/portfolio.config'
@@ -42,36 +42,56 @@ function StatsSection() {
   // Initialize immediately with static fallback — never shows 0
   const fallback = portfolioConfig.staticStats
   const [stats, setStats] = useState<ProcessedStats | null>({
-    totalProjects: fallback?.totalRepos ?? 48,
-    totalStars:    fallback?.totalStars  ?? 12,
-    totalForks:    fallback?.totalForks  ?? 5,
-    totalCommits:  fallback?.totalCommits ?? 300,
+    totalProjects: fallback?.totalRepos ?? 83,
+    totalStars:    fallback?.totalStars  ?? 18,
+    totalForks:    fallback?.totalForks  ?? 8,
+    totalCommits:  fallback?.totalCommits ?? 21385,
     languages: [
-      { name: 'Python',     percentage: 45, color: '#3776ab' },
-      { name: 'JavaScript', percentage: 25, color: '#f7df1e' },
-      { name: 'HTML',       percentage: 15, color: '#e34c26' },
-      { name: 'CSS',        percentage: 10, color: '#1572b6' },
-      { name: 'Java',       percentage: 5,  color: '#b07219' },
+      { name: 'Python',     percentage: 48, color: '#3572A5' },
+      { name: 'JavaScript', percentage: 24, color: '#f1e05a' },
+      { name: 'TypeScript', percentage: 14, color: '#3178c6' },
+      { name: 'HTML',       percentage: 8,  color: '#e34c26' },
+      { name: 'CSS',        percentage: 6,  color: '#563d7c' },
     ],
     completionRate: 85,
   })
-  const [loading, setLoading] = useState(false) // Don't block on API
+  const [loading, setLoading] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   const sectionRef = useRef<HTMLDivElement>(null)
   const hasTrackedRef = useRef(false)
 
-  // Load GitHub stats — updates values if API succeeds
+  // Load GitHub stats from centralized backend service
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const data = await getStats()
-        if (data && data.totalProjects > 0) {
-          setStats(data)
+        const overview = await fetchGitHubOverview()
+        if (overview && overview.statistics) {
+          const s = overview.statistics
+          const langs = overview.languages?.languages?.map(l => ({
+            name: l.name,
+            percentage: Math.round(l.percentage),
+            color: l.color,
+          })) || []
+
+          setStats({
+            totalProjects: s.totalRepos || fallback?.totalRepos || 83,
+            totalStars: s.totalStars || fallback?.totalStars || 18,
+            totalForks: s.totalForks || fallback?.totalForks || 8,
+            totalCommits: s.totalCommits || fallback?.totalCommits || 21385,
+            languages: langs.length ? langs.slice(0, 5) : [
+              { name: 'Python',     percentage: 48, color: '#3572A5' },
+              { name: 'JavaScript', percentage: 24, color: '#f1e05a' },
+              { name: 'TypeScript', percentage: 14, color: '#3178c6' },
+              { name: 'HTML',       percentage: 8,  color: '#e34c26' },
+              { name: 'CSS',        percentage: 6,  color: '#563d7c' },
+            ],
+            completionRate: Math.min(95, Math.max(70, Math.round((s.activeDays / 365) * 100))) || 85,
+          })
         }
       } catch (err) {
-        console.error('Failed to load GitHub stats:', err)
-        // Static values already displayed — no action needed
+        console.error('Failed to load GitHub stats in StatsSection:', err)
+        // Static values already displayed
       }
     }
 

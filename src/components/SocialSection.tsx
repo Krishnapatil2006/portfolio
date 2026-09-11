@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './SocialSection.css'
 import { portfolioConfig } from '../config/portfolio.config'
-import { fetchUserProfile } from '../services/github'
+import { fetchGitHubOverview } from '../services/githubApi'
 import {
   unlockAchievement,
   trackSectionVisit,
@@ -9,25 +9,33 @@ import {
 import { useLanguage } from '../contexts/LanguageContext'
 
 function SocialSection() {
-  const [followers, setFollowers] = useState<number>(0)
+  const [followers, setFollowers] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const { t } = useLanguage()
 
   const sectionRef = useRef<HTMLDivElement>(null)
   const hasTrackedRef = useRef(false)
 
-  // Load GitHub followers
+  // Load GitHub followers via backend overview
   useEffect(() => {
     let mounted = true
 
     const loadFollowers = async () => {
       try {
-        const profile = await fetchUserProfile()
-        if (profile && mounted) {
-          setFollowers(profile.followers)
+        const overview = await fetchGitHubOverview()
+        if (mounted) {
+          const count = overview?.profile?.followers ?? overview?.statistics?.followers
+          if (count !== undefined && count !== null) {
+            setFollowers(count)
+            setError(false)
+          } else {
+            setError(true)
+          }
         }
-      } catch (error) {
-        console.error('Error loading followers:', error)
+      } catch (err) {
+        console.error('Error loading followers:', err)
+        if (mounted) setError(true)
       } finally {
         if (mounted) setLoading(false)
       }
@@ -109,7 +117,7 @@ function SocialSection() {
         <div className="connections-content">
           <div className="connections-count">
             <span className="count-number">
-              {loading ? '—' : followers.toLocaleString()}
+              {loading ? '—' : error || followers === null ? 'Unavailable' : followers.toLocaleString()}
             </span>
             <span className="count-label">{t.githubFollowers}</span>
           </div>

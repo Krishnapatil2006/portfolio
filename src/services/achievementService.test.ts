@@ -328,9 +328,9 @@ describe('Achievement Service', () => {
   })
 
   describe('All Achievements Coverage', () => {
-    it('should have tests for all 18 achievements', () => {
+    it('should have tests for all 19 achievements', () => {
       // Verify we have all expected achievements
-      expect(visitorAchievements).toHaveLength(18)
+      expect(visitorAchievements).toHaveLength(19)
 
       const achievementIds = [
         'first-steps',
@@ -350,6 +350,7 @@ describe('Achievement Service', () => {
         'birthday-surprise',
         'contact-initiator',
         'hobby-enthusiast',
+        'generous-soul',
         'profile-completionist',
       ]
 
@@ -411,7 +412,7 @@ describe('Achievement Service', () => {
       const expectedTotalXP = visitorAchievements.reduce((sum, a) => sum + (a.xp || 0), 0)
 
       expect(stats.totalXP).toBe(expectedTotalXP)
-      expect(stats.unlockedCount).toBe(18)
+      expect(stats.unlockedCount).toBe(19)
       expect(stats.percentage).toBe(100)
     })
   })

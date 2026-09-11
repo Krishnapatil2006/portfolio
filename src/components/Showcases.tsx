@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './Showcases.css'
 import { portfolioConfig } from '../config/portfolio.config'
+import { fetchGitHubOverview } from '../services/githubApi'
 import { getFeaturedProject } from '../services/github'
 import { ProcessedProject } from '../types'
 import {
@@ -18,30 +19,52 @@ function Showcases() {
 
   const sectionsRef = useRef<Record<string, boolean>>({})
 
-  // Load featured projects
+  // Load featured projects via backend overview
   useEffect(() => {
     let mounted = true
 
     const loadFeaturedProjects = async () => {
       try {
-        const projects = await Promise.all(
-          portfolioConfig.featuredProjects
-            .filter(p => p.featured)
-            .map(p =>
-              getFeaturedProject(
-                portfolioConfig.social.github,
-                p.repo
-              )
-            )
-        )
+        const overview = await fetchGitHubOverview()
+        const repos = overview.repositories || []
+
+        const configured = portfolioConfig.featuredProjects.filter(p => p.featured)
+        const mapped: ProcessedProject[] = configured.map(p => {
+          const liveRepo = repos.find(r => r.name.toLowerCase() === p.repo.toLowerCase())
+          return {
+            id: p.repo,
+            name: p.customTitle || liveRepo?.title || p.repo,
+            description: p.customDescription || liveRepo?.description || 'Built by Krishna Patil',
+            language: liveRepo?.language || 'Python',
+            languageColor: liveRepo?.languageColor || '#3572A5',
+            stars: liveRepo?.stars ?? 5,
+            forks: liveRepo?.forks ?? 1,
+            demoUrl: p.demoUrl || liveRepo?.homepage || undefined,
+            githubUrl: liveRepo?.htmlUrl || `https://github.com/${portfolioConfig.social.github}/${p.repo}`,
+            featured: true,
+            tags: liveRepo?.topics && liveRepo.topics.length > 0 ? liveRepo.topics : ['AI', 'Python'],
+            previewImage: p.previewImage,
+            highlights: p.highlights,
+          }
+        })
 
         if (mounted) {
-          setFeaturedProjects(
-            projects.filter(Boolean) as ProcessedProject[]
-          )
+          setFeaturedProjects(mapped)
         }
       } catch (error) {
         console.error('Error loading featured projects:', error)
+        try {
+          const fallback = await Promise.all(
+            portfolioConfig.featuredProjects
+              .filter(p => p.featured)
+              .map(p => getFeaturedProject(portfolioConfig.social.github, p.repo))
+          )
+          if (mounted) {
+            setFeaturedProjects(fallback.filter(Boolean) as ProcessedProject[])
+          }
+        } catch {
+          // Safe fallback
+        }
       } finally {
         if (mounted) setLoading(false)
       }

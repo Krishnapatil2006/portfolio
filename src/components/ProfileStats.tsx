@@ -5,7 +5,7 @@ import {
   portfolioConfig,
   getWorkStatusConfig,
 } from '../config/portfolio.config'
-import { fetchUserProfile, getStats } from '../services/github'
+import { fetchGitHubOverview } from '../services/githubApi'
 import {
   calculateXPFromSources,
   calculateLevelFromXP,
@@ -102,24 +102,19 @@ function ProfileStats() {
 
     const loadGitHubData = async () => {
       try {
-        const [profile, repoStats] = await Promise.all([
-          fetchUserProfile(),
-          getStats(),
-        ])
-
+        const overview = await fetchGitHubOverview()
         if (!mountedRef.current) return
 
-        // Only update if API returned real data (not 0 from rate limiting)
-        if (profile && profile.public_repos > 0) {
-          setRepos(profile.public_repos)
-          setFollowers(profile.followers)
-        }
-        if (repoStats && repoStats.totalStars >= 0) {
-          // Keep static fallback if API returns 0 but we have a known real value
-          if (repoStats.totalStars > 0) setStars(repoStats.totalStars)
+        if (overview?.statistics) {
+          if (overview.statistics.totalRepos > 0) setRepos(overview.statistics.totalRepos)
+          if (overview.statistics.followers >= 0) setFollowers(overview.statistics.followers)
+          if (overview.statistics.totalStars > 0) setStars(overview.statistics.totalStars)
+        } else if (overview?.profile) {
+          if (overview.profile.public_repos > 0) setRepos(overview.profile.public_repos)
+          if (overview.profile.followers >= 0) setFollowers(overview.profile.followers)
         }
       } catch (error) {
-        console.error('Error loading GitHub data:', error)
+        console.error('Error loading GitHub data in ProfileStats:', error)
         // Static values already shown — no action needed on error
       }
     }

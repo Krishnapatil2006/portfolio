@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './TwinChatBot.css';
 import { portfolioConfig } from '../config/portfolio.config';
+import { API_BASE_URL } from '../config/api';
 
 interface Message {
   id: string;
@@ -86,17 +87,18 @@ const TwinChatBot: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     setIsTyping(true);
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://portfolio-6rvx.onrender.com';
+    const endpoint = `${API_BASE_URL}/api/chat`;
 
     try {
-      const res = await fetch(`${backendUrl}/api/chat`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userText, session_id: 'portfolio_visitor' })
       });
       
       if (!res.ok) {
-        throw new Error('Failed to reach backend');
+        const errJson = await res.json().catch(() => null);
+        throw new Error(errJson?.message || `Server responded with ${res.status}`);
       }
       
       const data = await res.json();

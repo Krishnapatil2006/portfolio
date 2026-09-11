@@ -138,7 +138,7 @@ def resume_knowledge_base(query: str = "") -> str:
             return "\n\n".join(matched)
         return "\n\n## ".join(sections[:4])
     except Exception:
-        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra. I have built 48+ projects including AI systems, web apps, games, and tools."
+        return "I am Krishna Patil, a passionate BCA student specializing in Computational Science from Pachora, Maharashtra. I have built 83+ public projects including AI systems, web apps, games, and tools."
 
 
 @tool

@@ -602,4 +602,49 @@ body.CosmicTheme .dropdown-submenu-item:hover {
   .nav-link {
     font-size: 12px;
   }
+
+  /* Prevent submenu horizontal overflow on mobile/tablet */
+  .dropdown-submenu {
+    position: static;
+    left: auto;
+    top: auto;
+    min-width: 100%;
+    margin-top: 6px;
+    box-shadow: none;
+    border-left: 2px solid #66c0f4;
+  }
+
+  .user-dropdown-menu {
+    max-width: calc(100vw - 32px);
+    right: 0;
+  }
 }
+
+@media (max-width: 480px) {
+  .header-topbar-container {
+    padding: 0 10px;
+  }
+
+  .topbar-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .user-name {
+    max-width: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav {
+    gap: 10px;
+  }
+
+  .nav-link {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+}
+

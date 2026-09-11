@@ -50,13 +50,13 @@ function ProfileOverview() {
         <div className="profile-left">
           <div className="avatar-container">
             <img
-              src={
-                avatarUrl ||
-                `https://github.com/${portfolioConfig.social.github}.png`
-              }
+              src={avatarUrl || '/Profile-Image.jpeg'}
               alt={`${portfolioConfig.personal.name} avatar`}
               className="avatar"
               loading="lazy"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/Profile-Image.jpeg'
+              }}
             />
             <div className="avatar-frame" />
           </div>

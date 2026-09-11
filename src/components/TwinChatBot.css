@@ -347,3 +347,59 @@ body.CosmicTheme .bot-section-header {
 body.CosmicTheme .bot-formatted strong {
   color: #ffd6f0;
 }
+
+/* ==========================================================================
+   Chatbot Mobile Responsiveness (320px - 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  .twin-chat-container {
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .twin-chat-btn {
+    width: 54px;
+    height: 54px;
+    font-size: 24px;
+  }
+
+  .twin-chat-window {
+    width: calc(100vw - 30px);
+    max-width: calc(100vw - 30px);
+    min-width: unset;
+    height: 72vh;
+    min-height: 380px;
+    margin-bottom: 8px;
+    resize: none;
+  }
+
+  .chat-msg-wrapper {
+    max-width: 90%;
+  }
+
+  .chat-header {
+    padding: 12px;
+  }
+
+  .chat-messages {
+    padding: 12px;
+  }
+
+  .chat-input-area {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .twin-chat-container {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .twin-chat-window {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    height: 70vh;
+  }
+}
+
