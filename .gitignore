@@ -1,7 +1,18 @@
+# Environment variables
 .env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Dependencies & build
 node_modules/
 dist/
 __pycache__/
+*.pyc
+
+# Local databases & logs
 backend/twin_chroma_db/
 backend/rag_chroma_db/
 backend/chatbot_details.md
