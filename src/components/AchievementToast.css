@@ -8,6 +8,7 @@
   gap: 12px;
   max-width: 400px;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .achievement-toast {
@@ -16,7 +17,7 @@
   border-radius: 4px;
   padding: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-  animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
   pointer-events: all;
@@ -31,7 +32,7 @@
 
 @keyframes slideInRight {
   from {
-    transform: translateX(120%);
+    transform: translateX(100%);
     opacity: 0;
   }
   to {
@@ -241,17 +242,34 @@
   transform: scale(1.1);
 }
 
-/* Mobile responsiveness */
-@media (max-width: 640px) {
+/* Mobile & Tablet responsiveness */
+@media (max-width: 1024px) {
   .achievement-toast-container {
     right: 10px;
     left: 10px;
-    max-width: none;
+    width: auto;
+    max-width: calc(100% - 20px);
     top: 70px;
+    overflow: hidden;
   }
 
   .achievement-toast {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 12px;
+    animation: slideInRightMobile 0.35s ease-out;
+  }
+
+  @keyframes slideInRightMobile {
+    from {
+      transform: translateY(-16px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .toast-icon {

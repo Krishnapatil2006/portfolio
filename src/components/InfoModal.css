@@ -542,16 +542,30 @@
 }
 
 @media (max-width: 480px) {
+  .info-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 94vh;
+  }
+
   .modal-header {
-    padding: 16px;
+    padding: 14px 12px;
   }
 
   .modal-title {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .modal-subtitle {
     font-size: 11px;
+  }
+
+  .modal-filters {
+    padding: 10px 12px;
+  }
+
+  .modal-content {
+    padding: 14px 12px;
   }
 
   .level-tiers-grid {

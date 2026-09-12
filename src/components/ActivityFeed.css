@@ -298,33 +298,41 @@ body.CosmicTheme .legend-box.intensity-4 {
   box-shadow: 0 0 4px rgba(248, 70, 180, 0.4);
 }
 
-/* Mobile: Add vertical overflow */
+/* Mobile: Internal horizontal scroller for contribution heatmap */
 @media (max-width: 768px) {
-  .heatmap-grid {
-    min-height: auto;
-    height: auto;
-    max-height: 140px;
-    overflow: hidden;
-  }
-
-  .heatmap-content {
-    max-height: 120px;
-    overflow: hidden;
-  }
-
-  .heatmap-weeks {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 90px;
-    min-height: auto;
-  }
-
-  .heatmap-labels {
-    margin-top: 12px;
+  .activity-feed {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .contribution-heatmap {
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 10px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .heatmap-grid {
+    min-height: auto;
+    height: auto;
+    width: max-content;
+    justify-content: flex-start;
+  }
+
+  .heatmap-content {
+    min-width: 0;
+  }
+
+  .heatmap-weeks {
+    overflow: visible;
+  }
+
+  .heatmap-labels {
+    margin-top: 14px;
   }
 }
 

@@ -253,3 +253,33 @@ body.CosmicTheme .wise-button:hover {
     font-size: 12px;
   }
 }
+
+@media (max-width: 480px) {
+  .wallet-modal-overlay {
+    padding: 10px 8px;
+  }
+
+  .wallet-modal {
+    max-height: 94vh;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .modal-header {
+    padding: 14px 12px;
+  }
+
+  .wallet-tabs {
+    padding: 0 10px;
+  }
+
+  .wallet-tab {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .modal-content {
+    padding: 14px 12px;
+  }
+}

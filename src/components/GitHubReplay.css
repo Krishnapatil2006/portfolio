@@ -869,6 +869,71 @@ body.CosmicTheme .github-replay .year-selector select:hover {
   }
 }
 
+@media (max-width: 480px) {
+  .github-replay .replay-carousel {
+    padding: 0 28px;
+    min-height: 520px;
+  }
+
+  .github-replay .carousel-nav {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .github-replay .carousel-nav.prev {
+    left: 2px;
+  }
+
+  .github-replay .carousel-nav.next {
+    right: 2px;
+  }
+
+  .github-replay .slide {
+    padding: 12px 2px;
+  }
+
+  .github-replay .stats-grid {
+    gap: 8px;
+  }
+
+  .github-replay .stat-card {
+    padding: 10px 6px;
+  }
+
+  .github-replay .stat-number {
+    font-size: 22px;
+  }
+
+  .github-replay .stat-label {
+    font-size: 10px;
+  }
+
+  .github-replay .impact-number {
+    font-size: 36px;
+  }
+
+  .github-replay .language-circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .github-replay .language-percentage {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 360px) {
+  .github-replay .replay-carousel {
+    padding: 0 24px;
+  }
+
+  .github-replay .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
 /* Desktop: Remove horizontal overflow and adjust alignment */
 @media (min-width: 769px) {
   .github-replay .heatmap-grid {

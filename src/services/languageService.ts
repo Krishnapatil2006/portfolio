@@ -7,6 +7,7 @@ export type Language =
   | 'emoji'
   | 'lorem'
   | 'youngStunnah'
+  | 'genz'
 
 const LANGUAGE_KEY = 'portfolio_language'
 const listeners: Array<(language: Language) => void> = []

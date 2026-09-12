@@ -660,3 +660,49 @@ body.CosmicTheme .tech-badge:hover {
     justify-content: center;
   }
 }
+
+@media (max-width: 480px) {
+  .project-modal-overlay {
+    padding: 10px 8px;
+  }
+
+  .project-modal {
+    max-height: 96vh;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .project-modal-header {
+    padding: 12px;
+  }
+
+  .project-modal-tabs {
+    padding: 0 8px;
+  }
+
+  .project-tab-btn {
+    padding: 10px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .project-modal-body {
+    padding: 12px 10px;
+    gap: 12px;
+  }
+
+  .project-hero-card {
+    padding: 14px 12px;
+  }
+
+  .project-modal-footer {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .footer-left {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}

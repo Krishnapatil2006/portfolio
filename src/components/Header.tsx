@@ -146,7 +146,7 @@ function Header({ onOpenAchievements, onOpenInfo, onOpenWallet }: HeaderProps) {
 
                     {showLanguageSubmenu && (
                       <div className="dropdown-submenu">
-                        {(['english','sarcasm','binary','emoji','lorem','youngStunnah'] as Language[]).map(lang => (
+                        {(['english','sarcasm','binary','emoji','lorem','youngStunnah','genz'] as Language[]).map(lang => (
                           <button
                             key={lang}
                             className="dropdown-submenu-item"

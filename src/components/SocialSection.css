@@ -154,6 +154,8 @@
   font-size: 13px;
   color: var(--text-secondary);
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .contact-item strong {
@@ -165,6 +167,8 @@
   color: var(--accent-blue);
   text-decoration: none;
   transition: color 0.3s ease;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .contact-item a:hover {
